@@ -2,14 +2,15 @@
 seeds = false
 skip-lint = false
 [programs.localnet]
-kyogen = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+kyogen = "CTQCiB97LrAjAtHy1eqGwqGiy2mjefBXR762nrDhWYTL"
+registry = "7Vpu3mY18uA2iWBhAyKc72F9xs1SaMByV5KaPpuLhFQz"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "Localnet"
-wallet = "/Users/spacemandev/.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

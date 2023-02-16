@@ -1,0 +1,22 @@
+[package]
+name = "registry"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "registry"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = "0.26.0"
+anchor-spl = "0.26.0"
+#core_ds = { path="../../../../sol-arc/programs/core-ds", features=["cpi"] }
+core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
