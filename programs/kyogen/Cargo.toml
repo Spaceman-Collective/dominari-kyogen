@@ -17,3 +17,6 @@ default = []
 
 [dependencies]
 anchor-lang = "0.26.0"
+core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
+registry = { path = "../registry", features = ["cpi"]}
+serde = { version = "1.0.147", optional=true }

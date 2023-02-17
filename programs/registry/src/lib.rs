@@ -18,6 +18,13 @@ use constant::*;
 //use event::*;
 //use state::*;
 
+/**
+ * 
+ * THIS IS NOT A GENERAL PURPOSE REGISTRY
+ * INSTANCE_REGISTRY HAS BEEN MODIFIED TO FIT THE NEEDS OF KYOGEN CLASH DOMINARI
+ */
+
+
 #[program]
 pub mod registry {
     use super::*;
@@ -57,10 +64,14 @@ pub mod registry {
 
         core_ds::cpi::init_registry(register_registry_ctx, ctx.program_id.key(), instance)?;        
         // Allow this Action Bundle authority over it's own Instance
-        ctx.accounts.action_bundle_registration.instances.insert(instance);
+        ctx.accounts.kyogen_registration.instances.insert(instance);
+        ctx.accounts.structures_registration.instances.insert(instance);
+        ctx.accounts.cards_registration.instances.insert(instance);
+
         Ok(())
     }
     
+
     /**
      * Anyone can register a component with the registry as long as it's a unique URI
      */

@@ -1061,6 +1061,9 @@ name = "kyogen"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "core_ds",
+ "registry",
+ "serde",
 ]
 
 [[package]]

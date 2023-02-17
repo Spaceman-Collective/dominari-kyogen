@@ -45,12 +45,29 @@ pub struct InstanceRegistry<'info>{
 
     #[account(
         mut,
-        constraint = action_bundle_registration.action_bundle.key() == ab_signer.key(),
-        realloc = action_bundle_registration.to_account_info().data_len() + 8, //getting a new instance
+        constraint = kyogen_registration.action_bundle.key() == ab_signer.key(),
+        realloc = kyogen_registration.to_account_info().data_len() + 8, //getting a new instance
         realloc::payer = payer,
         realloc::zero = false,
     )]
-    pub action_bundle_registration: Account<'info, ActionBundleRegistration>,
+    pub kyogen_registration: Account<'info, ActionBundleRegistration>,
+    #[account(
+        mut,
+        constraint = structures_registration.action_bundle.key() == ab_signer.key(),
+        realloc = structures_registration.to_account_info().data_len() + 8, //getting a new instance
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
+    pub structures_registration: Account<'info, ActionBundleRegistration>,
+    #[account(
+        mut,
+        constraint = cards_registration.action_bundle.key() == ab_signer.key(),
+        realloc = cards_registration.to_account_info().data_len() + 8, //getting a new instance
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
+    pub cards_registration: Account<'info, ActionBundleRegistration>,
+
 
     /// CHECK: Initialized via CPI
     #[account(mut)]
