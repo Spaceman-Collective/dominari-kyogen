@@ -19,15 +19,17 @@ impl MaxSize for RegistryConfig {
     }
 }
 
+// Keeps track of Instance Admin & Registered ABs
 #[account]
-pub struct InstanceAuthority{
+pub struct RegistryIndex{
     pub instance: u64,
-    pub authority: Pubkey // Action Bundle Pubkey
+    pub authority: Pubkey, // Action Bundle Pubkey
+    pub action_bundles_registrations: BTreeSet<Pubkey>,
 }
 
-impl MaxSize for InstanceAuthority {
+impl MaxSize for RegistryIndex {
     fn get_max_size() -> u64 {
-        return 8+32;
+        return 8+32+4;
     }
 }
 
@@ -44,7 +46,7 @@ impl MaxSize for ComponentSchema {
 
 #[account]
 pub struct ActionBundleRegistration{
-    pub action_bundle: Pubkey,
+    pub action_bundle: Pubkey, // PDA Signer of AB
     pub instances: BTreeSet<u64>,
     pub can_mint: bool,
     pub components: BTreeSet<Pubkey>, //PDA of the Component Schema

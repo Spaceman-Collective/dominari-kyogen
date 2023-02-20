@@ -24,11 +24,11 @@ use core_ds::state::SerializedComponent;
 declare_id!("3YdayPtujByJ1g1DWEUh7vpg78gZL49FWyD5rDGyof9T");
 
 #[program]
-pub mod dominari {
+pub mod kyogen {
     use super::*;
 
     // Initialize: Set authority & relevant component keys
-    pub fn initialize(ctx: Context<Initialize>, component_keys: RelevantComponentKeys) -> Result<()> {
+    pub fn initialize(ctx: Context<Initialize>, component_keys: KyogenComponentKeys) -> Result<()> {
         ctx.accounts.config.authority = ctx.accounts.payer.key();
         ctx.accounts.config.components = component_keys;
         Ok(())
@@ -59,7 +59,7 @@ pub mod dominari {
      */
     pub fn create_game_instance(ctx: Context<CreateGameInstance>, instance: u64, game_config: GameConfig) -> Result<()> {
         let config_seeds:&[&[u8]] = &[
-            SEEDS_ABSIGNER,
+            SEEDS_KYOGENSIGNER,
             &[*ctx.bumps.get("config").unwrap()]
         ];
         let signer_seeds = &[config_seeds];
@@ -72,10 +72,8 @@ pub mod dominari {
                 system_program: ctx.accounts.system_program.to_account_info(),
                 registry_config: ctx.accounts.registry_config.to_account_info(),
                 registry_instance: ctx.accounts.registry_instance.to_account_info(),
+                registry_index: ctx.accounts.registry_index.to_account_info(),
                 core_ds: ctx.accounts.coreds.to_account_info(),
-                kyogen_registration: ctx.accounts.kyogen_registration.to_account_info(),
-                structures_registration: ctx.accounts.structures_registration.to_account_info(),
-                cards_registration: ctx.accounts.cards_registration.to_account_info(),
                 ab_signer: ctx.accounts.config.to_account_info(),
             },
             signer_seeds
@@ -100,7 +98,7 @@ pub mod dominari {
     pub fn init_map(ctx: Context<InitMap>, entity_id:u64, max_x:u8, max_y:u8) -> Result<()> {
         let reference = &ctx.accounts.config.components;
         let config_seeds:&[&[u8]] = &[
-            SEEDS_ABSIGNER,
+            SEEDS_KYOGENSIGNER,
             &[*ctx.bumps.get("config").unwrap()]
         ];
         let signer_seeds = &[config_seeds];
@@ -124,7 +122,6 @@ pub mod dominari {
         // Map has Metadata and MapMeta Components
         let metadata_component = ComponentMetadata {
             name: format!("Map ({:#})", ctx.accounts.registry_instance.instance),
-            entity_type: EntityType::Map,
             registry_instance: ctx.accounts.registry_instance.key(),
         }.try_to_vec().unwrap();
         components.insert(reference.metadata.key(), SerializedComponent { 
@@ -148,16 +145,16 @@ pub mod dominari {
     }
 
     // Init Tile
-    pub fn init_tile(ctx:Context<InitTile>, entity_id:u64, x:u8, y:u8) -> Result<()> {
+    pub fn init_tile(ctx:Context<InitTile>, entity_id:u64, x:u8, y:u8, spawnable: bool, spawn_cost: u64) -> Result<()> {
         // Tile can only be instanced by Admin
         // So we can trust in the input for x,y isn't duplicated
         let reference = &ctx.accounts.config.components;
 
         // Tile has Metadata, Location, Feature, Occupant, Owner and Cost components
+        // Tile also has a Spawnable Component
         let mut components: BTreeMap<Pubkey, SerializedComponent> = BTreeMap::new();
         let metadata = ComponentMetadata {
             name: format!("Tile ({x}, {y})"),
-            entity_type: EntityType::Tile,
             registry_instance: ctx.accounts.registry_instance.key(),
         }.try_to_vec().unwrap();
         components.insert(reference.metadata.key(), SerializedComponent { 
@@ -182,8 +179,18 @@ pub mod dominari {
             data: occupant
         });
 
+        let spawnable = ComponentSpawn {
+            spawnable,
+            clan: None,
+            cost: spawn_cost
+        }.try_to_vec().unwrap();
+        components.insert(reference.spawn.key(), SerializedComponent { 
+            max_size: ComponentSpawn::get_max_size(),
+            data: spawnable
+        });
+
         let config_seeds:&[&[u8]] = &[
-            SEEDS_ABSIGNER,
+            SEEDS_KYOGENSIGNER,
             &[*ctx.bumps.get("config").unwrap()]
         ];
         let signer_seeds = &[config_seeds];
@@ -209,7 +216,7 @@ pub mod dominari {
     }
 
     // Init Player
-    pub fn init_player(ctx:Context<InitPlayer>, entity_id:u64, name:String) -> Result<()> {
+    pub fn init_player(ctx:Context<InitPlayer>, entity_id:u64, name:String, clan: Clans) -> Result<()> {
         let reference = &ctx.accounts.config.components;
         // Optional: Fail if too many players already in the instance
         if ctx.accounts.instance_index.config.max_players == ctx.accounts.instance_index.players.len() as u16 {
@@ -226,7 +233,6 @@ pub mod dominari {
         // Feature has Metadata, Location, Owner, Active, and ..Blueprint Components
         let metadata_component = ComponentMetadata {
             name: ctx.accounts.payer.key().to_string(),
-            entity_type: EntityType::Player,
             registry_instance: ctx.accounts.registry_instance.key(),
         }.try_to_vec().unwrap();
         components.insert(reference.metadata.key(), SerializedComponent { 
@@ -234,13 +240,42 @@ pub mod dominari {
             data:  metadata_component
         });
 
+        let pack = &ctx.accounts.pack;
+        let starting_cards;
+        match clan {
+            Clans::Ancients => {
+                if pack.name != STARTING_CARDS_ANCIENTS_NAME {
+                    return err!(KyogenError::WrongPack)
+                }
+                starting_cards = pack.blueprints.clone();
+            },
+            Clans::Wildings => {
+                if pack.name != STARTING_CARDS_WILDINGS_NAME {
+                    return err!(KyogenError::WrongPack)
+                }
+                starting_cards = pack.blueprints.clone();
+            },
+            Clans::Creepers => {
+                if pack.name != STARTING_CARDS_CREEPERS_NAME {
+                    return err!(KyogenError::WrongPack)
+                }
+                starting_cards = pack.blueprints.clone();
+            },
+            Clans::Synths => {
+                if pack.name != STARTING_CARDS_SYNTHS_NAME {
+                    return err!(KyogenError::WrongPack)
+                }
+                starting_cards = pack.blueprints.clone();
+            },
+        }
+
         let player_stats_component = ComponentPlayerStats {
             name,
             key: ctx.accounts.payer.key(),
             score: 0,
             kills: 0,
-            // Give them Starting Card
-            cards: ctx.accounts.instance_index.config.starting_cards.clone()
+            cards: starting_cards,
+            clan,
         }.try_to_vec().unwrap();
         components.insert(reference.player_stats.key(), SerializedComponent { 
             max_size: ComponentPlayerStats::get_max_size(), 
@@ -248,7 +283,7 @@ pub mod dominari {
         });
 
         let config_seeds:&[&[u8]] = &[
-            SEEDS_ABSIGNER,
+            SEEDS_KYOGENSIGNER,
             &[*ctx.bumps.get("config").unwrap()]
         ];
         let signer_seeds = &[config_seeds];
@@ -274,7 +309,8 @@ pub mod dominari {
         ctx.accounts.instance_index.players.push(entity_id);
         Ok(())
     }
-
+    
+    // Change spawnable tile's clan affiliation
     // Spawn Unit
     // Move Unit
     // Attack Unit
@@ -291,9 +327,6 @@ pub fn get_random_u64(max: u64) -> u64 {
     return target;
 }
 
-/* MOVE TO OTHER LAYERS */
-// Init Feature
-// Use Feature
-// Use Mod
-// Start Meteor Shower
-/* MOVE TO OTHER LAYERS */
+/* MOVE TO CARD LAYER */
+// Use Card
+/* MOVE TO CARD LAYER */

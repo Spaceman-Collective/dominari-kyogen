@@ -63,14 +63,20 @@ pub mod registry {
         );
 
         core_ds::cpi::init_registry(register_registry_ctx, ctx.program_id.key(), instance)?;        
-        // Allow this Action Bundle authority over it's own Instance
-        ctx.accounts.kyogen_registration.instances.insert(instance);
-        ctx.accounts.structures_registration.instances.insert(instance);
-        ctx.accounts.cards_registration.instances.insert(instance);
+        
+        // Create RegistryIndex
+        ctx.accounts.registry_index.authority = ctx.accounts.payer.key();
+        ctx.accounts.registry_index.instance = instance;
 
         Ok(())
     }
     
+    pub fn append_registry_index(ctx:Context<AppendRegistryIndex>) -> Result<()> {
+        ctx.accounts.registry_index.action_bundles_registrations.insert(ctx.accounts.action_bundle_registration.key());
+        ctx.accounts.action_bundle_registration.instances.insert(ctx.accounts.registry_index.instance);
+        Ok(())
+    }
+
 
     /**
      * Anyone can register a component with the registry as long as it's a unique URI

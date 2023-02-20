@@ -3,10 +3,11 @@ use core_ds::account::MaxSize;
 
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone)]
-pub struct RelevantComponentKeys {
+pub struct KyogenComponentKeys {
     pub metadata: Pubkey,       // All entities
     pub mapmeta: Pubkey,        // Map
-    pub location: Pubkey,       // Tile
+    pub location: Pubkey,       // Tile, Structure
+    pub spawn: Pubkey,          // Tile,
     pub occupant: Pubkey,       // Tile
     pub player_stats: Pubkey,   // Player
     pub owner: Pubkey,          // Troop
@@ -16,11 +17,11 @@ pub struct RelevantComponentKeys {
     pub damage: Pubkey,         // Troop
     pub troop_class: Pubkey,    // Troop
     pub active: Pubkey,         // Troop
-    pub offchain_metadata: Pubkey // Any
+    pub image: Pubkey           // Any
 }
 
-impl MaxSize for RelevantComponentKeys {
+impl MaxSize for KyogenComponentKeys {
     fn get_max_size() -> u64 {
-        return 32*13;
+        return 32*14;
     }
 }

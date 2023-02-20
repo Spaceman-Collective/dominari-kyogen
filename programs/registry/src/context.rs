@@ -30,6 +30,7 @@ pub struct Initialize<'info>{
 }
 
 #[derive(Accounts)] 
+#[instruction(instance:u64)]
 pub struct InstanceRegistry<'info>{
     #[account(mut)]
     pub payer: Signer<'info>,
@@ -44,35 +45,46 @@ pub struct InstanceRegistry<'info>{
     pub ab_signer: Signer<'info>,
 
     #[account(
-        mut,
-        constraint = kyogen_registration.action_bundle.key() == ab_signer.key(),
-        realloc = kyogen_registration.to_account_info().data_len() + 8, //getting a new instance
-        realloc::payer = payer,
-        realloc::zero = false,
+        init,
+        payer=payer,
+        seeds=[
+            SEEDS_REGISTRYINDEX,
+            instance.to_be_bytes().as_ref(),
+        ],
+        bump,
+        space=8+RegistryIndex::get_max_size() as usize
     )]
-    pub kyogen_registration: Account<'info, ActionBundleRegistration>,
-    #[account(
-        mut,
-        constraint = structures_registration.action_bundle.key() == ab_signer.key(),
-        realloc = structures_registration.to_account_info().data_len() + 8, //getting a new instance
-        realloc::payer = payer,
-        realloc::zero = false,
-    )]
-    pub structures_registration: Account<'info, ActionBundleRegistration>,
-    #[account(
-        mut,
-        constraint = cards_registration.action_bundle.key() == ab_signer.key(),
-        realloc = cards_registration.to_account_info().data_len() + 8, //getting a new instance
-        realloc::payer = payer,
-        realloc::zero = false,
-    )]
-    pub cards_registration: Account<'info, ActionBundleRegistration>,
-
+    pub registry_index: Account<'info, RegistryIndex>,
 
     /// CHECK: Initialized via CPI
     #[account(mut)]
     pub registry_instance: AccountInfo<'info>,
     pub core_ds: Program<'info, CoreDs>,
+}
+
+#[derive(Accounts)]
+pub struct AppendRegistryIndex<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    #[account(
+        mut,
+        realloc = registry_index.to_account_info().data_len() + 32, //32 is size of Pubkey
+        realloc::payer = payer,
+        realloc::zero = false,
+        // Only instance admin can add more action bundles to the instance
+        constraint = registry_index.authority == payer.key()
+    )]
+    pub registry_index: Account<'info, RegistryIndex>,
+
+    #[account(
+        mut,
+        realloc = action_bundle_registration.to_account_info().data_len() + 8, //8 is size of u64 (Instance ID)
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
+    pub action_bundle_registration: Account<'info, ActionBundleRegistration>,
 }
 
 #[derive(Accounts)]

@@ -7,23 +7,12 @@ use core_ds::account::MaxSize;
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct ComponentMetadata{
     pub name: String,
-    pub entity_type: EntityType,
     pub registry_instance: Pubkey
-}
-
-#[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
-pub enum EntityType {
-    Map,
-    Unit,
-    Feature,
-    Tile,
-    Player
 }
 
 impl MaxSize for ComponentMetadata {
     fn get_max_size() -> u64 {
-        return STRING_MAX_SIZE + STRING_MAX_SIZE + 32
+        return STRING_MAX_SIZE + 32
     }
 }
 
@@ -50,6 +39,20 @@ pub struct ComponentLocation {
 impl MaxSize for ComponentLocation {
     fn get_max_size() -> u64 {
         return 1 + 1
+    }
+}
+
+#[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+pub struct ComponentSpawn {
+    pub spawnable: bool,
+    pub clan: Option<Clans>,
+    pub cost: u64,
+}
+
+impl MaxSize for ComponentSpawn {
+    fn get_max_size() -> u64 {
+        return 1 + 1 + 1 + 1 + 8;
     }
 }
 
@@ -87,12 +90,13 @@ pub struct ComponentPlayerStats{
     pub score: u64,
     pub kills: u64,
     // Blueprints for Cards, PDA for Pack, String for Blueprint name
-    pub cards: Vec<Pubkey>, 
+    pub cards: Vec<Pubkey>,
+    pub clan: Clans, 
 }
 
 impl MaxSize for ComponentPlayerStats {
     fn get_max_size() -> u64 {
-        return STRING_MAX_SIZE+32+8+8+4+(32*PLAYER_MAX_CARDS)
+        return STRING_MAX_SIZE+32+8+8+4+(32*PLAYER_MAX_CARDS)+2
     }
 }
 
@@ -184,11 +188,11 @@ impl MaxSize for ComponentActive {
 
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
-pub struct ComponentOffchainMetadata{
+pub struct ComponentImage{
     pub link: String,
 }
 
-impl MaxSize for ComponentOffchainMetadata {
+impl MaxSize for ComponentImage {
     fn get_max_size() -> u64 {
         return STRING_MAX_SIZE*2 //can be 2 times regular string for long url links
     }

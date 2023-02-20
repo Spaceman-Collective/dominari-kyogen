@@ -9,12 +9,12 @@ use crate::constant::*;
 #[account]
 pub struct Config {
     pub authority: Pubkey,
-    pub components: RelevantComponentKeys,
+    pub components: KyogenComponentKeys,
 }
 
 impl MaxSize for Config {
     fn get_max_size() -> u64 {
-        return 32+RelevantComponentKeys::get_max_size();
+        return 32 + KyogenComponentKeys::get_max_size();
     }
 }
 
@@ -87,11 +87,11 @@ impl MaxSize for InstanceIndex {
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone)]
 pub struct GameConfig {
     pub max_players: u16,
-    pub starting_cards: Vec<Pubkey>,
+    pub game_token: Pubkey, //MINT for SPL token used to pay for things 
 }
 
 impl MaxSize for GameConfig {
     fn get_max_size() -> u64 {
-        return 2 + PLAYER_MAX_CARDS;
+        return 2 + 32;
     }
 }

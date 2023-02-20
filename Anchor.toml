@@ -4,6 +4,7 @@ skip-lint = false
 [programs.localnet]
 kyogen = "CTQCiB97LrAjAtHy1eqGwqGiy2mjefBXR762nrDhWYTL"
 registry = "7Vpu3mY18uA2iWBhAyKc72F9xs1SaMByV5KaPpuLhFQz"
+structures = "4Bo4cgr4RhGpXJsQUV4KENCf3HJwPveFsPELJGGN9GkR"
 
 [registry]
 url = "https://api.apr.dev"

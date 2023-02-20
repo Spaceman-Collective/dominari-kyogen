@@ -9,4 +9,7 @@ pub enum KyogenError {
 
     #[msg("String too long")]
     StringTooLong,
+
+    #[msg("Wrong pack passed in!")]
+    WrongPack,
 }

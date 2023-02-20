@@ -14,7 +14,7 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer=payer,
-        seeds=[SEEDS_ABSIGNER],
+        seeds=[SEEDS_KYOGENSIGNER],
         bump,
         space= 8 + Config::get_max_size() as usize,
     )]
@@ -30,7 +30,7 @@ pub struct RegisterPack<'info> {
     #[account(
         constraint = payer.key() == config.authority.key()
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         init,
@@ -54,7 +54,7 @@ pub struct RegisterBlueprint<'info> {
     #[account(
         constraint = payer.key() == config.authority.key()
     )]
-    pub config: Account<'info, Config>,
+    pub config: Box<Account<'info, Config>>,
 
     #[account(
         init,
@@ -80,7 +80,7 @@ pub struct CreateGameInstance<'info> {
     #[account(
         // Only admin can create new games
         constraint = payer.key() == config.authority.key(),
-        seeds=[SEEDS_ABSIGNER],
+        seeds=[SEEDS_KYOGENSIGNER],
         bump,
     )]
     pub config: Box<Account<'info, Config>>,
@@ -105,13 +105,9 @@ pub struct CreateGameInstance<'info> {
     )]
     pub registry_config: Account<'info, RegistryConfig>,
     pub registry_program: Program<'info, Registry>,
-    
-    #[account(mut)]
-    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
-    #[account(mut)]
-    pub structures_registration: Box<Account<'info, ActionBundleRegistration>>,
-    #[account(mut)]
-    pub cards_registration: Box<Account<'info, ActionBundleRegistration>>,
+
+    /// CHECK: Created via CPI in the registry program
+    pub registry_index: AccountInfo<'info>,
 
     //CoreDs
     pub coreds: Program<'info, CoreDs>, 
@@ -142,7 +138,7 @@ pub struct InitMap<'info> {
     #[account(
         // Only admin can create new games
         constraint = payer.key() == config.authority.key(),
-        seeds=[SEEDS_ABSIGNER],
+        seeds=[SEEDS_KYOGENSIGNER],
         bump,
     )]
     pub config: Box<Account<'info, Config>>,
@@ -178,11 +174,16 @@ pub struct InitTile<'info> {
     #[account(
         // Only admin can create new games
         constraint = payer.key() == config.authority.key(),
-        seeds=[SEEDS_ABSIGNER],
+        seeds=[SEEDS_KYOGENSIGNER],
         bump,
     )]
     pub config: Box<Account<'info, Config>>,
-    #[account(mut)]
+    #[account(
+        mut,
+        realloc = instance_index.to_account_info().data_len() + ENTITY_ID_SIZE,
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
     pub instance_index: Box<Account<'info, InstanceIndex>>,
     
     // Registry
@@ -213,13 +214,21 @@ pub struct InitPlayer<'info> {
     // Kyogen
     #[account(
         // Anyone can initialize themselves
-        seeds=[SEEDS_ABSIGNER],
+        seeds=[SEEDS_KYOGENSIGNER],
         bump,
     )]
     pub config: Box<Account<'info, Config>>,
-    #[account(mut)]
+    #[account(
+        mut,
+        realloc = instance_index.to_account_info().data_len() + ENTITY_ID_SIZE,
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
     pub instance_index: Box<Account<'info, InstanceIndex>>,
-    
+
+    /// CHECK: Pack Name checked inside the ix based on clan that's passed in
+    pub pack: Box<Account<'info, Pack>>,
+
     // Registry
     #[account(
         seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
@@ -238,6 +247,7 @@ pub struct InitPlayer<'info> {
     #[account(mut)]
     pub player_entity: AccountInfo<'info>,
 }
+
 
 ////////////////////////////////////////////////////
 pub fn compute_blueprint_size(name:&String, map: &BTreeMap<Pubkey, SerializedComponent>) -> u64 {
