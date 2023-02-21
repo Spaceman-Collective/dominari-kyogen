@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::hash::*;
 use std::collections::BTreeMap;
+use anchor_spl::token::{Transfer, transfer};
 
 pub mod account;
 pub mod context;
@@ -311,9 +312,85 @@ pub mod kyogen {
     }
     
     // Change spawnable tile's clan affiliation
+    pub fn claim_spawn(ctx:Context<ClaimSpawn>) -> Result<()> {
+        let reference = &ctx.accounts.config.components;
+
+        // Check that the 
+            // Tile has a Unit
+        let unit_c = ctx.accounts.tile_entity.components.get(&reference.occupant).unwrap();
+        let unit_component = ComponentOccupant::try_from_slice(unit_c.data.as_slice()).unwrap();
+        if unit_component.occupant_id.is_none(){
+            return err!(KyogenError::WrongTile)
+        }
+            // Unit that's passed is the Tile Unit
+        if unit_component.occupant_id.unwrap() != ctx.accounts.unit_entity.entity_id {
+            return err!(KyogenError::WrongUnit)
+        }
+            // Player is the Owner of the Tile Unit
+        let owner_c = ctx.accounts.unit_entity.components.get(&reference.owner).unwrap();
+        let owner_component = ComponentOwner::try_from_slice(&owner_c.data.as_slice()).unwrap();
+        if owner_component.owner.unwrap() != ctx.accounts.payer.key() {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Check that tile is Spawnable
+        let spawn_c = ctx.accounts.tile_entity.components.get(&reference.spawn).unwrap();
+        let mut spawn_component = ComponentSpawn::try_from_slice(spawn_c.data.as_slice()).unwrap();
+        if !spawn_component.spawnable {
+            return err!(KyogenError::WrongTile)
+        }
+        // Check that Spawn isn't already Player's Clans'
+        let player_stats_c = ctx.accounts.player_entity.components.get(&reference.player_stats).unwrap();
+        let player_stats_component = ComponentPlayerStats::try_from_slice(&player_stats_c.data.as_slice()).unwrap();
+        if player_stats_component.clan != spawn_component.clan.unwrap() {
+            return err!(KyogenError::WrongTile)
+        } 
+        // Charge the Player GAME TOKEN to claim the spawn
+        let transfer_accounts = Transfer{
+            from: ctx.accounts.from_ata.to_account_info(),
+            to: ctx.accounts.to_ata.to_account_info(),
+            authority: ctx.accounts.payer.to_account_info()
+        };
+
+        transfer(CpiContext::new(
+            ctx.accounts.token_program.to_account_info(), 
+            transfer_accounts,
+        ), spawn_component.cost)?;
+
+        
+        // Change the cost of the Spawn by Spawn Multiplier
+        spawn_component.cost = (spawn_component.cost as f64 * ctx.accounts.instance_index.config.spawn_claim_multiplier).floor() as u64;
+        match player_stats_component.clan {
+            Clans::Ancients => spawn_component.clan = Some(Clans::Ancients),
+            Clans::Wildings => spawn_component.clan = Some(Clans::Wildings),
+            Clans::Creepers => spawn_component.clan = Some(Clans::Creepers),
+            Clans::Synths => spawn_component.clan = Some(Clans::Synths)
+        }
+        // Save changes to Tile
+        let config_seeds:&[&[u8]] = &[
+            SEEDS_KYOGENSIGNER,
+            &[*ctx.bumps.get("config").unwrap()]
+        ];
+        let signer_seeds = &[config_seeds];
+        let modify_tile_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.tile_entity.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_tile_ctx, vec![(reference.spawn, spawn_component.try_to_vec().unwrap())])?;
+        Ok(())
+    }
+    
     // Spawn Unit
     // Move Unit
     // Attack Unit
+    // Widraw Money from Instance Index
 
     // Reclaim Sol from a Game
         // Close Map, Tile, Player

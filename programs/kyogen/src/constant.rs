@@ -11,7 +11,7 @@ pub const PLAYER_MAX_CARDS: u64 = 10;
 
 
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
 pub enum Clans {
     Ancients,
     Wildings,

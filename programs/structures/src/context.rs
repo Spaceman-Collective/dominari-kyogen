@@ -108,13 +108,14 @@ pub struct UseSpawn<'info> {
     pub system_program: Program<'info, System>,
 
     // Structures
-    pub spawn_entity: Box<Account<'info, Entity>>,
     
     // Kyogen
     
     // Registry
     
     // CoreDS 
+
+    pub spawn_entity: Box<Account<'info, Entity>>,
 }
 
 

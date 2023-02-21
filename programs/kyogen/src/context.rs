@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 
 use anchor_lang::prelude::*;
-use core_ds::{account::{MaxSize, RegistryInstance}, state::SerializedComponent, program::CoreDs};
+use core_ds::{account::{MaxSize, RegistryInstance, Entity}, state::SerializedComponent, program::CoreDs};
 use registry::{constant::SEEDS_REGISTRYSIGNER, account::{RegistryConfig, ActionBundleRegistration}, program::Registry};
 use crate::{constant::*, account::*};
+use anchor_spl::{associated_token::{get_associated_token_address, AssociatedToken}, token::{Token, TokenAccount, Mint}};
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -75,6 +76,21 @@ pub struct CreateGameInstance<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     pub system_program: Program<'info, System>,
+
+    // Associated Token Account for Mint
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = game_token,
+        associated_token::authority = instance_index
+    )]
+    pub instance_token_account: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    #[account(
+        address = game_config.game_token
+    )]
+    pub game_token: Account<'info, Mint>,
 
     // Action Bundle
     #[account(
@@ -248,6 +264,50 @@ pub struct InitPlayer<'info> {
     pub player_entity: AccountInfo<'info>,
 }
 
+#[derive(Accounts)]
+pub struct ClaimSpawn<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // SPL Transfer
+    #[account(
+        address = get_associated_token_address(&payer.key(), &instance_index.config.game_token)
+    )]
+    pub from_ata: Account<'info, TokenAccount>,
+    #[account(
+        address = get_associated_token_address(&instance_index.key(), &instance_index.config.game_token)
+    )]
+    pub to_ata: Account<'info, TokenAccount>,
+    pub token_program: Program<'info, Token>,
+
+    // Kyogen
+    #[account(
+        // Anyone can initialize themselves
+        seeds=[SEEDS_KYOGENSIGNER],
+        bump,
+    )]
+    pub config: Box<Account<'info, Config>>,
+    pub instance_index: Box<Account<'info, InstanceIndex>>,
+    
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+    
+    // CoreDS
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+    #[account(mut)]
+    pub tile_entity: Box<Account<'info, Entity>>,
+    pub unit_entity: Box<Account<'info, Entity>>,
+    pub player_entity: Box<Account<'info, Entity>>,
+}
 
 ////////////////////////////////////////////////////
 pub fn compute_blueprint_size(name:&String, map: &BTreeMap<Pubkey, SerializedComponent>) -> u64 {

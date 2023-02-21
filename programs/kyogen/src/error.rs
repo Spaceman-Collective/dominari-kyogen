@@ -12,4 +12,10 @@ pub enum KyogenError {
 
     #[msg("Wrong pack passed in!")]
     WrongPack,
+
+    #[msg("Wrong tile passed in!")]
+    WrongTile,
+
+    #[msg("Wrong unit!")]
+    WrongUnit,
 }

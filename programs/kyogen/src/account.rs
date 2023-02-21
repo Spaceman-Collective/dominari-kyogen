@@ -87,11 +87,12 @@ impl MaxSize for InstanceIndex {
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone)]
 pub struct GameConfig {
     pub max_players: u16,
-    pub game_token: Pubkey, //MINT for SPL token used to pay for things 
+    pub game_token: Pubkey, //MINT for SPL token used to pay for things
+    pub spawn_claim_multiplier: f64,
 }
 
 impl MaxSize for GameConfig {
     fn get_max_size() -> u64 {
-        return 2 + 32;
+        return 2 + 32 + 8;
     }
 }
