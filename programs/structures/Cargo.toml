@@ -22,4 +22,4 @@ core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
 registry = { path = "../registry", features = ["cpi"]}
 kyogen = { path = "../kyogen", features = ["cpi"]}
 serde = { version = "1.0.147", optional=true }
-solana-program = "=1.14.12"
+solana-program = "=1.14.11"

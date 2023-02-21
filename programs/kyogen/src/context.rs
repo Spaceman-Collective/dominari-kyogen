@@ -344,7 +344,7 @@ pub struct SpawnUnit <'info> {
     // Core Ds
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
-    // CHECK: Created via CPI
+    /// CHECK: Created via CPI
     #[account(mut)]
     pub unit: AccountInfo<'info>,
     #[account(mut)]
