@@ -37,3 +37,11 @@ pub struct UnitMoved {
     pub from: u64,
     pub to: u64,
 }
+
+#[event]
+pub struct UnitAttacked{
+    pub instance: u64,
+    pub attacker: u64,
+    pub defender: u64,
+    pub tile: u64,
+}

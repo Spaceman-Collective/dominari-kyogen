@@ -391,6 +391,43 @@ pub struct MoveUnit<'info>{
     pub player: Box<Account<'info, Entity>>,
 }
 
+#[derive(Accounts)]
+pub struct AttackUnit<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // Kyogen
+    pub instance_index: Box<Account<'info, InstanceIndex>>,
+    #[account(
+        // Anyone can initialize themselves
+        seeds=[SEEDS_KYOGENSIGNER],
+        bump,
+    )]
+    pub config: Box<Account<'info, Config>>,
+
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+
+    // Core DS
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+
+    #[account(mut)]
+    pub attacker: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub defender: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub defending_tile: Box<Account<'info, Entity>>,
+}
+
 ////////////////////////////////////////////////////
 pub fn compute_blueprint_size(name:&String, map: &BTreeMap<Pubkey, SerializedComponent>) -> u64 {
     let mut size:u64 = name.as_bytes().len() as u64 + 4; // 4 is for empty btreemap

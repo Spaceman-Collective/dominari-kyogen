@@ -664,11 +664,172 @@ pub mod kyogen {
             from: ctx.accounts.from.entity_id,
             to: ctx.accounts.to.entity_id
         });
-        
+
         Ok(())
     }
 
     // Attack Unit
+    pub fn attack_unit(ctx: Context<AttackUnit>) -> Result<()> {
+        // Don't need to check if the tiles / units/ etc belong to the registry instance because the registry will do those checks for us
+        let reference = &ctx.accounts.config.components;
+        let attacker = &ctx.accounts.attacker;
+        let defender = &ctx.accounts.defender;
+        let tile = &ctx.accounts.defending_tile;
+
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_KYOGENSIGNER,
+            &[*ctx.bumps.get("config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+
+        // Check if game is paused
+        if ctx.accounts.instance_index.play_phase != PlayPhase::Play {
+            return err!(KyogenError::GamePaused)
+        }
+
+        // Check attacker is owned by payer
+        let attacker_owner_c = attacker.components.get(&reference.owner).unwrap();
+        let attacker_owner = ComponentOwner::try_from_slice(&attacker_owner_c.data.as_slice()).unwrap();
+        if attacker_owner.owner != Some(ctx.accounts.payer.key()) {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Check defender is NOT owned by payer
+        let defender_owner_c = defender.components.get(&reference.owner).unwrap();
+        let defender_owner = ComponentOwner::try_from_slice(&defender_owner_c.data.as_slice()).unwrap();
+        if defender_owner.player == attacker_owner.player {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Check that attacker and defender are active
+        let attacker_active_c = attacker.components.get(&reference.active).unwrap();
+        let attacker_active = ComponentActive::try_from_slice(&attacker_active_c.data.as_slice()).unwrap();
+        let defender_active_c = defender.components.get(&reference.active).unwrap();
+        let mut defender_active = ComponentActive::try_from_slice(&defender_active_c.data.as_slice()).unwrap();       
+        if attacker_active.active == false || defender_active.active == false{
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Defending Tile unit is Defender
+        let tile_occupant_c = tile.components.get(&reference.occupant).unwrap();
+        let mut tile_occupant = ComponentOccupant::try_from_slice(&tile_occupant_c.data.as_slice()).unwrap();
+        if tile_occupant.occupant_id.unwrap() != defender.entity_id {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Defender is in range of attacker
+        let attacker_location_c = attacker.components.get(&reference.location).unwrap();
+        let attacker_location = ComponentLocation::try_from_slice(&attacker_location_c.data.as_slice()).unwrap();
+        let defender_location_c = defender.components.get(&reference.location).unwrap();
+        let defender_location = ComponentLocation::try_from_slice(&defender_location_c.data.as_slice()).unwrap();
+        
+        let distance:f64 = (((defender_location.x as f64 - attacker_location.x as f64).powf(2_f64) + (defender_location.y as f64 - attacker_location.y as f64 ).powf(2_f64)) as f64).sqrt();
+        let attacker_range_c = attacker.components.get(&reference.range).unwrap();
+        let attacker_range = ComponentRange::try_from_slice(&attacker_range_c.data.as_slice()).unwrap();
+        if distance.floor() as u8 > attacker_range.attack_range {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        // Attacker last used is valid
+        let clock = Clock::get().unwrap();
+        let attacker_last_used_c = attacker.components.get(&reference.last_used).unwrap();
+        let mut attacker_last_used = ComponentLastUsed::try_from_slice(&attacker_last_used_c.data.as_slice()).unwrap();
+        if attacker_last_used.last_used != 0 && (attacker_last_used.last_used + attacker_last_used.recovery) >= clock.slot {
+            return err!(KyogenError::UnitRecovering)
+        }
+
+        attacker_last_used.last_used = clock.slot; 
+
+        // Calculate damage with Attacker Damage component against Defender Health Component
+        let attacker_damage_c = attacker.components.get(&reference.damage).unwrap();
+        let attacker_damage = ComponentDamage::try_from_slice(&attacker_damage_c.data.as_slice()).unwrap();
+
+        let defender_health_c = defender.components.get(&reference.health);
+        let mut defender_health = ComponentHealth::try_from_slice(&defender_health_c.unwrap().data.as_slice()).unwrap();
+
+        let mut dmg = get_random_u64(attacker_damage.max_damage); 
+
+        let defender_troop_class_c = defender.components.get(&reference.troop_class).unwrap();
+        let defender_troop_class = ComponentTroopClass::try_from_slice(&defender_troop_class_c.data.as_slice()).unwrap();
+        match defender_troop_class.class {
+            TroopClass::Samurai => dmg += attacker_damage.bonus_samurai as u64,
+            TroopClass::Shinobi => dmg += attacker_damage.bonus_shinobi as u64,
+            TroopClass::Sohei => dmg += attacker_damage.bonus_sohei as u64
+        }
+
+        if dmg < attacker_damage.min_damage {
+            dmg = attacker_damage.min_damage;
+        }
+        // Modify defender health and active
+        if dmg >= defender_health.health {
+            // modify the defending tile occupant and set defender to not active
+            defender_health.health = 0;
+            defender_active.active = false;
+            tile_occupant.occupant_id = None;
+
+            let modify_tile_ctx = CpiContext::new_with_signer(
+                ctx.accounts.registry_program.to_account_info(),            
+                registry::cpi::accounts::ModifyComponent {
+                    entity: ctx.accounts.defending_tile.to_account_info(),
+                    registry_config: ctx.accounts.registry_config.to_account_info(),
+                    action_bundle: ctx.accounts.config.to_account_info(),
+                    action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                    core_ds: ctx.accounts.coreds.to_account_info(),                
+                }, 
+                signer_seeds
+            );
+            registry::cpi::req_modify_component(modify_tile_ctx, vec![
+                (reference.occupant, tile_occupant.try_to_vec().unwrap()), // Last Used
+            ])?;
+
+        } else {
+            // subtract defender health
+            defender_health.health -= dmg;
+        }
+        // Modify defender
+        let modify_defender_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.defender.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_defender_ctx, vec![
+            (reference.health, defender_health.try_to_vec().unwrap()), 
+            (reference.active, defender_active.try_to_vec().unwrap()), 
+        ])?;
+
+        // Modify attacker last used
+        let modify_attacker_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.attacker.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_attacker_ctx, vec![
+            (reference.last_used, attacker_last_used.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        // emit unit attacked
+        emit!(UnitAttacked{
+            instance: ctx.accounts.registry_instance.instance,
+            attacker: ctx.accounts.attacker.entity_id,
+            defender: ctx.accounts.defender.entity_id,
+            tile: ctx.accounts.defending_tile.entity_id,
+        });
+
+        Ok(())
+    }
+
     // Widraw Money from Instance Index
 
     // Reclaim Sol from a Game
@@ -682,7 +843,3 @@ pub fn get_random_u64(max: u64) -> u64 {
     let target = num/(u64::MAX/max);
     return target;
 }
-
-/* MOVE TO CARD LAYER */
-// Use Card
-/* MOVE TO CARD LAYER */
