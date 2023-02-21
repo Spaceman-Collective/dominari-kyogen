@@ -324,6 +324,11 @@ pub struct SpawnUnit <'info> {
     // Kyogen
     pub unit_blueprint: Box<Account<'info, Blueprint>>,
     pub instance_index: Box<Account<'info, InstanceIndex>>,
+    #[account(
+        // Anyone can initialize themselves
+        seeds=[SEEDS_KYOGENSIGNER],
+        bump,
+    )]
     pub config: Box<Account<'info, Config>>,
 
     // Registry
@@ -345,6 +350,44 @@ pub struct SpawnUnit <'info> {
     #[account(mut)]
     pub tile: Box<Account<'info, Entity>>,
     #[account(mut)]
+    pub player: Box<Account<'info, Entity>>,
+}
+
+#[derive(Accounts)]
+pub struct MoveUnit<'info>{
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // Kyogen
+    pub instance_index: Box<Account<'info, InstanceIndex>>,
+    #[account(
+        // Anyone can initialize themselves
+        seeds=[SEEDS_KYOGENSIGNER],
+        bump,
+    )]
+    pub config: Box<Account<'info, Config>>,
+
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+
+    // Core DS
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+   
+    #[account(mut)]
+    pub from: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub to: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub unit: Box<Account<'info, Entity>>,
     pub player: Box<Account<'info, Entity>>,
 }
 

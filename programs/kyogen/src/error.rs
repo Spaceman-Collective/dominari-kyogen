@@ -24,4 +24,7 @@ pub enum KyogenError {
 
     #[msg("Game paused!")]
     GamePaused,
+
+    #[msg("Unit recovering")]
+    UnitRecovering,
 }

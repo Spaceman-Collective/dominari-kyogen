@@ -415,7 +415,6 @@ pub mod kyogen {
         let reference = &ctx.accounts.config.components;
 
         // Check if game is paused
-        // Check the game isnt' paused
         if ctx.accounts.instance_index.play_phase != PlayPhase::Play {
             return err!(KyogenError::GamePaused)
         }
@@ -546,6 +545,129 @@ pub mod kyogen {
     }
 
     // Move Unit
+    pub fn move_unit(ctx:Context<MoveUnit>) -> Result<()> {
+        // Don't need to check if the tiles / units/ etc belong to the registry instance because the registry will do those checks for us
+        let reference = &ctx.accounts.config.components;
+
+        // Check if game is paused
+        if ctx.accounts.instance_index.play_phase != PlayPhase::Play {
+            return err!(KyogenError::GamePaused)
+        }
+
+        // From tile has an occupant that is owned by player
+        let from_occupant_c = ctx.accounts.from.components.get(&reference.occupant).unwrap();
+        let mut from_occupant = ComponentOccupant::try_from_slice(&from_occupant_c.data.as_slice()).unwrap();
+        if from_occupant.occupant_id.is_none() ||
+            from_occupant.occupant_id.unwrap() != ctx.accounts.unit.entity_id {
+                return err!(KyogenError::WrongTile)
+        }
+        let unit_owner_c = ctx.accounts.unit.components.get(&reference.owner).unwrap();
+        let unit_owner = ComponentOwner::try_from_slice(&unit_owner_c.data.as_slice()).unwrap();
+        if unit_owner.owner.unwrap() == ctx.accounts.payer.key() ||
+            unit_owner.player.unwrap() == ctx.accounts.player.entity_id {
+            return err!(KyogenError::WrongPlayer)
+        }
+
+        // To tile occupant is empty
+        let to_occupant_c = ctx.accounts.to.components.get(&reference.occupant).unwrap();
+        let mut to_occupant = ComponentOccupant::try_from_slice(&to_occupant_c.data.as_slice()).unwrap();
+        if to_occupant.occupant_id.is_some() {
+            return err!(KyogenError::WrongTile)
+        }
+
+        // Unit is recovered from last used
+        let clock = Clock::get().unwrap();
+        let unit_last_used_c = ctx.accounts.unit.components.get(&reference.last_used).unwrap();
+        let mut unit_last_used = ComponentLastUsed::try_from_slice(&unit_last_used_c.data.as_slice()).unwrap();
+        if unit_last_used.last_used != 0 && (unit_last_used.last_used + unit_last_used.recovery) >= clock.slot {
+            return err!(KyogenError::UnitRecovering)
+        }
+
+        // Distance between from and to must be < Unit's movement
+        let from_location_c = ctx.accounts.from.components.get(&reference.location).unwrap();
+        let from_location = ComponentLocation::try_from_slice(&from_location_c.data.as_slice()).unwrap();
+
+        let to_location_c = ctx.accounts.to.components.get(&reference.location).unwrap();
+        let to_location = ComponentLocation::try_from_slice(&to_location_c.data.as_slice()).unwrap();
+        
+        let distance:f64 = (((to_location.x as f64 - from_location.x as f64).powf(2_f64) + (to_location.y as f64 - from_location.y as f64).powf(2_f64)) as f64).sqrt();
+        let unit_range_component = ctx.accounts.unit.components.get(&reference.range).unwrap();
+        let unit_range = ComponentRange::try_from_slice(&unit_range_component.data.as_slice()).unwrap();
+        if unit_range.movement < distance.floor() as u8 {
+            return err!(KyogenError::WrongUnit)
+        }
+
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_KYOGENSIGNER,
+            &[*ctx.bumps.get("config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+        
+        // Modify Unit Last Used & Location (copy from To Tile)
+        unit_last_used.last_used = clock.slot;
+        let modify_unit_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.unit.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_unit_ctx, vec![
+            (reference.last_used, unit_last_used.try_to_vec().unwrap()), // Last Used
+            (reference.location, to_location.try_to_vec().unwrap())  // Location
+        ])?;
+
+        // Modify From Tile
+        from_occupant.occupant_id = None;
+
+        let modify_from_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.from.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_from_ctx, vec![
+            (reference.occupant, from_occupant.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+
+        // Modify To Tile
+        to_occupant.occupant_id = Some(ctx.accounts.unit.entity_id);
+        
+        let modify_to_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.to.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_to_ctx, vec![
+            (reference.occupant, to_occupant.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        emit!(UnitMoved{
+            instance: ctx.accounts.registry_instance.instance,
+            unit: ctx.accounts.unit.entity_id,
+            from: ctx.accounts.from.entity_id,
+            to: ctx.accounts.to.entity_id
+        });
+        
+        Ok(())
+    }
+
     // Attack Unit
     // Widraw Money from Instance Index
 

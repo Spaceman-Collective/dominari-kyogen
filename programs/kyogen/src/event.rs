@@ -29,3 +29,11 @@ pub struct UnitSpawned {
     pub player: u64,
     pub unit: u64,
 }
+
+#[event]
+pub struct UnitMoved {
+    pub instance: u64,
+    pub unit: u64,
+    pub from: u64,
+    pub to: u64,
+}
