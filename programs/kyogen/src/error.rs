@@ -18,4 +18,10 @@ pub enum KyogenError {
 
     #[msg("Wrong unit!")]
     WrongUnit,
+
+    #[msg("Wrong player!")]
+    WrongPlayer,
+
+    #[msg("Game paused!")]
+    GamePaused,
 }

@@ -15,7 +15,7 @@ use account::*;
 use context::*;
 use constant::*;
 use error::*;
-//use event::*;
+use event::*;
 use component::*;
 use state::*;
 
@@ -91,7 +91,11 @@ pub mod kyogen {
      * Only admin is allowed to change the game states for Kyogen Clash games.
      */
     pub fn change_game_state(ctx:Context<ChangeGameState>, new_game_state:PlayPhase) -> Result<()> {
-        ctx.accounts.instance_index.play_phase = new_game_state;
+        ctx.accounts.instance_index.play_phase = new_game_state.clone();
+        emit!(GameStateChanged{
+            instance: ctx.accounts.registry_instance.instance,
+            new_state: new_game_state
+        });
         Ok(())
     }
 
@@ -276,7 +280,7 @@ pub mod kyogen {
             score: 0,
             kills: 0,
             cards: starting_cards,
-            clan,
+            clan: clan.clone(),
         }.try_to_vec().unwrap();
         components.insert(reference.player_stats.key(), SerializedComponent { 
             max_size: ComponentPlayerStats::get_max_size(), 
@@ -308,12 +312,24 @@ pub mod kyogen {
         
         // Add player entity to instance index
         ctx.accounts.instance_index.players.push(entity_id);
+
+        emit!(NewPlayer { 
+            instance: ctx.accounts.registry_instance.instance, 
+            player_id: entity_id, 
+            authority: ctx.accounts.payer.key(), 
+            clan: clan
+        });
         Ok(())
     }
     
     // Change spawnable tile's clan affiliation
     pub fn claim_spawn(ctx:Context<ClaimSpawn>) -> Result<()> {
         let reference = &ctx.accounts.config.components;
+
+        // Check the game isnt' paused
+        if ctx.accounts.instance_index.play_phase != PlayPhase::Play {
+            return err!(KyogenError::GamePaused)
+        }
 
         // Check that the 
             // Tile has a Unit
@@ -384,10 +400,151 @@ pub mod kyogen {
             signer_seeds
         );
         registry::cpi::req_modify_component(modify_tile_ctx, vec![(reference.spawn, spawn_component.try_to_vec().unwrap())])?;
+       
+        emit!(SpawnClaimed { 
+            instance: ctx.accounts.registry_instance.instance, 
+            clan: player_stats_component.clan, 
+            player: ctx.accounts.player_entity.entity_id
+        });
+        
         Ok(())
     }
-    
+
     // Spawn Unit
+    pub fn spawn_unit(ctx:Context<SpawnUnit>, unit_id:u64) -> Result<()> {
+        let reference = &ctx.accounts.config.components;
+
+        // Check if game is paused
+        // Check the game isnt' paused
+        if ctx.accounts.instance_index.play_phase != PlayPhase::Play {
+            return err!(KyogenError::GamePaused)
+        }
+
+        // Check player belongs to payer
+        let player_stats_component = ctx.accounts.player.components.get(&reference.player_stats).unwrap();
+        let mut player_stats = ComponentPlayerStats::try_from_slice(&player_stats_component.data.as_slice()).unwrap();
+        if player_stats.key.key() != ctx.accounts.payer.key() {
+            return err!(KyogenError::WrongPlayer)
+        }
+
+        // Check the tile is empty
+        let tile_occupant_component = ctx.accounts.tile.components.get(&reference.occupant).unwrap();
+        let mut tile_occupant = ComponentOccupant::try_from_slice(&tile_occupant_component.data.as_slice()).unwrap();
+        if tile_occupant.occupant_id.is_some() {
+            return err!(KyogenError::WrongTile)
+        }
+        // Check that Tile is spawnable and belongs to player Clan
+        let tile_spawnable_component = ctx.accounts.tile.components.get(&reference.spawn).unwrap();
+        let tile_spawn = ComponentSpawn::try_from_slice(&tile_spawnable_component.data.as_slice()).unwrap();
+        if !tile_spawn.spawnable ||
+            tile_spawn.clan.is_none() || 
+            tile_spawn.clan.unwrap() != player_stats.clan    
+        {
+            return err!(KyogenError::WrongTile)
+        }
+
+        // Check that blueprint is in player hand
+            // Unwrap is fine here because if the Blueprint is not in player hand we just fail
+        let card_idx = player_stats.cards.iter().position(|&card| card.key() == ctx.accounts.unit_blueprint.key()).unwrap();
+        //Modify player hand to remove blueprint
+        player_stats.cards.swap_remove(card_idx);
+
+        // Create unit entity
+        // Unit has Metadata, Owner, Location, Active + Blueprint components
+        let mut components: BTreeMap<Pubkey, SerializedComponent> = BTreeMap::new();
+        // Add Metadata, Owner, Location, Active + Blueprint components
+        let metadata_component = ComponentMetadata {
+            name: ctx.accounts.unit_blueprint.name.clone(),
+            registry_instance: ctx.accounts.registry_instance.key()
+        }.try_to_vec().unwrap();
+        components.insert(reference.metadata.key(), SerializedComponent {
+            max_size: ComponentMetadata::get_max_size(),
+            data: metadata_component
+        });
+        let owner_component = ComponentOwner {  
+            owner: Some(ctx.accounts.payer.key()),
+            player: Some(ctx.accounts.player.entity_id)
+        }.try_to_vec().unwrap();
+        components.insert(reference.owner.key(), SerializedComponent {
+            max_size: ComponentOwner::get_max_size(),
+            data: owner_component
+        });
+        let active_component = ComponentActive {
+            active: true
+        }.try_to_vec().unwrap();
+        components.insert(reference.active.key(), SerializedComponent{
+            max_size: ComponentActive::get_max_size(),
+            data: active_component
+        });
+
+        // Clone the Tile's location component to the Unit
+        components.insert(
+            reference.location.key(),
+            ctx.accounts.tile.components.get(&reference.location).unwrap().clone()
+        );
+        components.extend(ctx.accounts.unit_blueprint.components.clone());
+
+        // Add the new unit entity to instance index      
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_KYOGENSIGNER,
+            &[*ctx.bumps.get("config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+
+        let mint_entity_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),
+            registry::cpi::accounts::InitEntity{
+                entity: ctx.accounts.unit.to_account_info(),
+                payer: ctx.accounts.payer.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                registry_instance: ctx.accounts.registry_instance.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),
+            },
+            signer_seeds
+        );
+        registry::cpi::init_entity(mint_entity_ctx, unit_id, components)?;
+        ctx.accounts.instance_index.units.push(unit_id);
+
+        // Modify tile for occupant component to point to unit
+        tile_occupant.occupant_id = Some(unit_id);
+        let modify_tile_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.tile.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_tile_ctx, vec![(reference.occupant, tile_occupant.try_to_vec().unwrap())])?;
+        // Update player stats to no longer have the card
+        let modify_player_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.player.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_player_ctx, vec![(reference.player_stats, player_stats.try_to_vec().unwrap())])?;
+        // Emit UnitSpawn event
+        emit!(UnitSpawned{
+            instance: ctx.accounts.registry_instance.instance,
+            tile: ctx.accounts.tile.entity_id,
+            player: ctx.accounts.player.entity_id,
+            unit: unit_id
+        });
+        Ok(())
+    }
+
     // Move Unit
     // Attack Unit
     // Widraw Money from Instance Index

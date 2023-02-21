@@ -123,6 +123,7 @@ pub struct CreateGameInstance<'info> {
     pub registry_program: Program<'info, Registry>,
 
     /// CHECK: Created via CPI in the registry program
+    #[account(mut)]
     pub registry_index: AccountInfo<'info>,
 
     //CoreDs
@@ -141,7 +142,10 @@ pub struct ChangeGameState<'info> {
     )]
     pub config: Box<Account<'info, Config>>,
 
-    pub instance_index: Box<Account<'info, InstanceIndex>>,
+    pub instance_index: Box<Account<'info, InstanceIndex>>, 
+
+    // Used to figure out what instance for event
+    pub registry_instance: Account<'info, RegistryInstance>,
 }
 
 #[derive(Accounts)]
@@ -272,10 +276,12 @@ pub struct ClaimSpawn<'info> {
 
     // SPL Transfer
     #[account(
+        mut,
         address = get_associated_token_address(&payer.key(), &instance_index.config.game_token)
     )]
     pub from_ata: Account<'info, TokenAccount>,
     #[account(
+        mut,
         address = get_associated_token_address(&instance_index.key(), &instance_index.config.game_token)
     )]
     pub to_ata: Account<'info, TokenAccount>,
@@ -307,6 +313,39 @@ pub struct ClaimSpawn<'info> {
     pub tile_entity: Box<Account<'info, Entity>>,
     pub unit_entity: Box<Account<'info, Entity>>,
     pub player_entity: Box<Account<'info, Entity>>,
+}
+
+#[derive(Accounts)]
+pub struct SpawnUnit <'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // Kyogen
+    pub unit_blueprint: Box<Account<'info, Blueprint>>,
+    pub instance_index: Box<Account<'info, InstanceIndex>>,
+    pub config: Box<Account<'info, Config>>,
+
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+  
+    // Core Ds
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+    // CHECK: Created via CPI
+    #[account(mut)]
+    pub unit: AccountInfo<'info>,
+    #[account(mut)]
+    pub tile: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub player: Box<Account<'info, Entity>>,
 }
 
 ////////////////////////////////////////////////////

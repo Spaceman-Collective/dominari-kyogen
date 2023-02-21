@@ -10,5 +10,8 @@
 7. Initialize Structures AB (ComponentIndex) 
 8. Initialize Cards AB (ComponentIndex)
 
+## Other Setup
+1. Mint an SPL token and give it to players
+
 ## Game Setup
 1. After Creating Game with Kyogen, initialize Structures & Cards with same payer, they'll CPI into Registry to register themselves
