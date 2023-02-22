@@ -77,7 +77,6 @@ pub mod registry {
         Ok(())
     }
 
-
     /**
      * Anyone can register a component with the registry as long as it's a unique URI
      */
@@ -92,7 +91,7 @@ pub mod registry {
      * which is set as it's authority
      */
     pub fn register_action_bundle(ctx: Context<RegisterAB>) -> Result<()> {
-        ctx.accounts.action_bundle_registration.action_bundle = ctx.accounts.action_bundle.key();
+        ctx.accounts.action_bundle_registration.action_bundle = ctx.accounts.action_bundle_signer.key();
         ctx.accounts.action_bundle_registration.instances = BTreeSet::new();
         ctx.accounts.action_bundle_registration.can_mint = true;
         Ok(())

@@ -125,7 +125,7 @@ pub struct RegisterAB <'info> {
         payer=payer,
         seeds=[
             SEEDS_ACTIONBUNDLEREGISTRATION,
-            action_bundle.key().as_ref()
+            action_bundle_signer.key().as_ref()
         ],
         bump,
         space=8+ActionBundleRegistration::get_max_size() as usize
@@ -133,7 +133,7 @@ pub struct RegisterAB <'info> {
     pub action_bundle_registration: Account<'info, ActionBundleRegistration>,
 
     /// CHECK: PDA Signer from Action Bundle
-    pub action_bundle: AccountInfo<'info>,
+    pub action_bundle_signer: AccountInfo<'info>,
 }
 
 #[derive(Accounts)]

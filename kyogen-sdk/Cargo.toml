@@ -8,6 +8,11 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
+registry = { path="../programs/registry", features=["no-entrypoint"]}
+kyogen = { path="../programs/kyogen", features=["no-entrypoint", "sdk"]}
+structures = { path="../programs/structures", features=["no-entrypoint", "sdk"]}
+
 anchor-lang = "0.26.0"
 solana-client-wasm = "1.14.11"
 wasm-bindgen = "0.2.83"
@@ -15,8 +20,5 @@ wasm-bindgen-futures = "0.4.33"
 serde-wasm-bindgen = "0.4.5"
 console_error_panic_hook = "0.1.7"
 web-sys = "0.3.60"
+bimap = {version="0.6.2", features=["serde"]}
 serde = { version="1.0.147", features=["derive"]}
-core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
-registry = { path="../programs/registry", features=["no-entrypoint"]}
-kyogen = { path="../programs/kyogen", features=["no-entrypoint", "sdk"]}
-structures = { path="../programs/structures", features=["no-entrypoint", "sdk"]}
