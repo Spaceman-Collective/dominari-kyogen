@@ -111,7 +111,7 @@ pub mod structures {
         let structure_ref = &ctx.accounts.config.components;
         let blueprint_components = &ctx.accounts.structure_blueprint.components;
 
-        let structure_type_c = blueprint_components.get(&structure_ref.structure_type).unwrap();
+        let structure_type_c = blueprint_components.get(&structure_ref.structure).unwrap();
         let structure_type = ComponentStructure::try_from_slice(structure_type_c.data.as_slice()).unwrap();
 
         if matches!(structure_type.structure, StructureType::Portal { .. }) {

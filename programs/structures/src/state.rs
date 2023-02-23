@@ -4,7 +4,7 @@ use core_ds::account::MaxSize;
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
 #[derive(AnchorDeserialize, AnchorSerialize, Debug, Clone)]
 pub struct StructuresComponentKeys {
-    pub structure_type: Pubkey
+    pub structure: Pubkey
 }
 
 impl MaxSize for StructuresComponentKeys {

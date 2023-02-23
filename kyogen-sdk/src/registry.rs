@@ -2,7 +2,7 @@ use std::str::FromStr;
 use registry::constant::SEEDS_REGISTRYSIGNER;
 use wasm_bindgen::prelude::*;
 use anchor_lang::{prelude::*, solana_program::instruction::Instruction, InstructionData};
-use serde_wasm_bindgen::{to_value as jsix, from_value};
+use serde_wasm_bindgen::{to_value, from_value};
 use anchor_lang::system_program::ID as system_program;
 
 #[wasm_bindgen]
@@ -45,7 +45,7 @@ impl Registry {
             }.data()
         };
 
-        jsix(&ix).unwrap()
+        to_value(&ix).unwrap()
     }
 
     // Register Component
@@ -71,7 +71,7 @@ impl Registry {
             }.data()
         };
 
-        jsix(&ix).unwrap()
+        to_value(&ix).unwrap()
     }
 
     // Register Action Bundle
@@ -98,7 +98,7 @@ impl Registry {
             data: registry::instruction::RegisterActionBundle {}.data()
         };
 
-        jsix(&ix).unwrap()
+        to_value(&ix).unwrap()
     }
     
     // Add Components To Action Bundle Registration
@@ -135,7 +135,7 @@ impl Registry {
             }.data()
         };
 
-        jsix(&ix).unwrap()
+        to_value(&ix).unwrap()
     }
 }
 
