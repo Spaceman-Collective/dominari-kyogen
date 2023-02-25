@@ -531,6 +531,65 @@ impl Kyogen {
     }
 
     // Claim Spawn
+    pub fn claim_spawn(&self, instance:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_str: String) -> JsValue {
+        let payer = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
+        let unit_entity = get_key_from_id(&self.core_id, &registry_instance, unit_id);
+        let tile_entity = get_key_from_id(&self.core_id, &registry_instance, tile_id);
+        let player_entity = get_key_from_id(&self.core_id, &registry_instance, player_id);
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        // ATA 
+        let game_token = Pubkey::from_str(game_token_str.as_str()).unwrap();
+        let from_ata = get_associated_token_address(&payer, &game_token);
+        let to_ata = get_associated_token_address(&instance_index, &game_token);
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::ClaimSpawn {
+                payer,
+                system_program,
+                config, 
+                instance_index,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                registry_instance,
+                coreds,
+                player_entity,
+                tile_entity,
+                unit_entity,
+                from_ata,
+                to_ata,
+                token_program,
+            }.to_account_metas(None),
+            data: kyogen::instruction::ClaimSpawn {}.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Spawn Unit
     // Move Unit
     // Attack Unit
