@@ -15,6 +15,8 @@ structures = { path="../programs/structures", features=["no-entrypoint", "sdk"]}
 
 anchor-lang = "0.26.0"
 solana-client-wasm = "1.14.11"
+spl-associated-token-account = "1.1.2"
+spl-token = "3.5.0"
 wasm-bindgen = "0.2.83"
 wasm-bindgen-futures = "0.4.33"
 serde-wasm-bindgen = "0.4.5"

@@ -1396,6 +1396,8 @@ dependencies = [
  "serde",
  "serde-wasm-bindgen",
  "solana-client-wasm",
+ "spl-associated-token-account",
+ "spl-token",
  "structures",
  "wasm-bindgen",
  "wasm-bindgen-futures",

@@ -1,16 +1,23 @@
 use std::collections::BTreeMap;
 use std::str::FromStr;
 use core_ds::account::MaxSize;
+use core_ds::constant::SEEDS_REGISTRYINSTANCE_PREFIX;
 use core_ds::state::SerializedComponent;
-use kyogen::constant::SEEDS_BLUEPRINT;
+use kyogen::account::GameConfig;
+use kyogen::constant::{SEEDS_BLUEPRINT, SEEDS_PACK, SEEDS_INSTANCEINDEX};
+use registry::constant::SEEDS_REGISTRYINDEX;
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen::{from_value, to_value};
 use anchor_lang::{prelude::*, solana_program::instruction::Instruction, InstructionData};
 use anchor_lang::system_program::ID as system_program;
 use crate::blueprint::{BlueprintJson, StructureTypeJSON};
 use crate::component_index::ComponentIndex;
+use crate::json_wrappers::*;
+use crate::registry::Registry;
 use kyogen::component::*;
 use structures::component::*;
+use spl_associated_token_account::{get_associated_token_address, ID as associated_token_program};
+use spl_token::ID as token_program;
 
 
 #[wasm_bindgen]
@@ -161,10 +168,9 @@ impl Kyogen {
             });
         }
 
-
         let payer = self.payer;
         let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
-        let blueprint = Pubkey::find_program_address(&[
+        let blueprint_acc = Pubkey::find_program_address(&[
             SEEDS_BLUEPRINT,
             name.as_bytes()
         ], &self.kyogen_id).0;
@@ -175,7 +181,7 @@ impl Kyogen {
                 payer,
                 system_program,
                 config,
-                blueprint
+                blueprint_acc
             }.to_account_metas(None),
             data: kyogen::instruction::RegisterBlueprint {
                 name: String::from(name),
@@ -187,7 +193,100 @@ impl Kyogen {
     }
 
     // Register Pack
+    pub fn register_pack(&self, name:String, blueprints_list: JsValue) -> JsValue {
+        let pubkey_list:Vec<String> = from_value(blueprints_list).unwrap();
+        let blueprints:Vec<Pubkey> = pubkey_list.iter().map(|key| {
+            Pubkey::from_str(key.as_str()).unwrap()
+        }).collect();
+
+        let payer = self.payer;
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        
+        let pack = Pubkey::find_program_address(&[
+            SEEDS_PACK,
+            name.as_str().as_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::RegisterPack {
+                payer,
+                system_program,
+                config,
+                pack
+            }.to_account_metas(None),
+            data: kyogen::instruction::RegisterPack {
+                name,
+                blueprints
+            }.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Create Game Instance
+    pub fn create_game_instance(&self, instance: u64, game_config_json: JsValue) -> JsValue {
+        let game_config: GameConfigJson = from_value(game_config_json).unwrap();
+        let payer = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &coreds).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let registry_index = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINDEX,
+            instance.to_be_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // ATA for Mint
+        let game_token = Pubkey::from_str(game_config.game_token.as_str()).unwrap();
+        let instance_token_account = get_associated_token_address(
+            &instance_index, 
+            &game_token
+        );
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::CreateGameInstance {
+                payer,
+                system_program,
+                coreds, 
+                registry_instance,
+                registry_config,
+                registry_program,
+                registry_index,
+                config,
+                instance_index,
+                token_program,
+                associated_token_program,
+                game_token,
+                instance_token_account
+            }.to_account_metas(None),
+            data: kyogen::instruction::CreateGameInstance {
+                instance,
+                game_config: GameConfig {
+                    max_players: game_config.max_players,
+                    game_token,
+                    spawn_claim_multiplier: game_config.spawn_claim_multiplier
+                }
+            }.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Change Game State
     // Init Map
     // Init Tile

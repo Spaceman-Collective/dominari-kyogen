@@ -41,7 +41,7 @@ pub struct RegisterPack<'info> {
             name.as_bytes()
         ],
         bump,
-        space = 8 + Pack::get_max_size() as usize
+        space = 8 + Pack::get_max_size() as usize + (blueprints.len() * 32)
     )]
     pub pack: Account<'info, Pack>
 }
@@ -65,9 +65,9 @@ pub struct RegisterBlueprint<'info> {
             name.as_bytes()
         ],
         bump,
-        space = 8 + Pack::get_max_size() as usize
+        space = 8 + Blueprint::get_max_size() as usize + compute_blueprint_size(&name, &blueprint) as usize
     )]
-    pub blueprint: Account<'info, Blueprint>
+    pub blueprint_acc: Account<'info, Blueprint>
 }
 
 #[derive(Accounts)]

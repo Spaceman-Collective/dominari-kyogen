@@ -50,8 +50,8 @@ pub mod kyogen {
      * @param blueprint BTreeMap of Pubkey to Serialized Component that gets auto loaded onto the new entity
      */
     pub fn register_blueprint(ctx: Context<RegisterBlueprint>, name: String, blueprint: BTreeMap<Pubkey, SerializedComponent>) -> Result<()> {
-        ctx.accounts.blueprint.name = name;
-        ctx.accounts.blueprint.components = blueprint;
+        ctx.accounts.blueprint_acc.name = name;
+        ctx.accounts.blueprint_acc.components = blueprint;
         Ok(())
     }
 
