@@ -5,13 +5,14 @@ use core_ds::constant::SEEDS_REGISTRYINSTANCE_PREFIX;
 use core_ds::state::SerializedComponent;
 use kyogen::account::{GameConfig, PlayPhase};
 use kyogen::constant::{SEEDS_BLUEPRINT, SEEDS_PACK, SEEDS_INSTANCEINDEX};
-use registry::constant::SEEDS_REGISTRYINDEX;
+use registry::constant::{SEEDS_REGISTRYINDEX, SEEDS_ACTIONBUNDLEREGISTRATION};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen::{from_value, to_value};
 use anchor_lang::{prelude::*, solana_program::instruction::Instruction, InstructionData};
 use anchor_lang::system_program::ID as system_program;
 use crate::blueprint::{BlueprintJson, StructureTypeJSON};
 use crate::component_index::ComponentIndex;
+use crate::coreds::get_key_from_id;
 use crate::json_wrappers::*;
 use crate::registry::Registry;
 use kyogen::component::*;
@@ -326,6 +327,58 @@ impl Kyogen {
     }
 
     // Init Map
+    pub fn init_map(&self, instance:u64, entity_id: u64, max_x: u8, max_y:u8) -> JsValue {
+        let payer = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
+        let map_entity = get_key_from_id(&self.core_id, &registry_instance, entity_id);
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::InitMap {
+                payer,
+                system_program,
+                config, 
+                instance_index,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                registry_instance,
+                coreds,
+                map_entity,
+            }.to_account_metas(None),
+            data: kyogen::instruction::InitMap {
+                entity_id,
+                max_x,
+                max_y
+            }.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Init Tile
     // Init Player
     // Claim Spawn
