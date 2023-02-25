@@ -134,6 +134,7 @@ pub struct CreateGameInstance<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(new_game_state: PlayPhase)]
 pub struct ChangeGameState<'info> {
     pub payer: Signer<'info>,
     #[account(

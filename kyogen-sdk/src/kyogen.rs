@@ -3,7 +3,7 @@ use std::str::FromStr;
 use core_ds::account::MaxSize;
 use core_ds::constant::SEEDS_REGISTRYINSTANCE_PREFIX;
 use core_ds::state::SerializedComponent;
-use kyogen::account::GameConfig;
+use kyogen::account::{GameConfig, PlayPhase};
 use kyogen::constant::{SEEDS_BLUEPRINT, SEEDS_PACK, SEEDS_INSTANCEINDEX};
 use registry::constant::SEEDS_REGISTRYINDEX;
 use wasm_bindgen::prelude::*;
@@ -234,7 +234,7 @@ impl Kyogen {
             SEEDS_REGISTRYINSTANCE_PREFIX,
             self.registry_id.to_bytes().as_ref(),
             instance.to_be_bytes().as_ref(),
-        ], &coreds).0;
+        ], &self.core_id).0;
 
         // Registry
         let registry_config = Registry::get_registry_signer(&self.registry_id);
@@ -288,6 +288,43 @@ impl Kyogen {
     }
 
     // Change Game State
+    pub fn change_game_state(&self, instance: u64, play_phase_str: &str) -> JsValue {
+        let payer = self.payer;
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        let new_game_state: PlayPhase;
+        match play_phase_str {
+            "Lobby" => new_game_state = PlayPhase::Lobby,
+            "Play" => new_game_state = PlayPhase::Play,
+            "Paused" => new_game_state = PlayPhase::Paused,
+            "Finished" => new_game_state = PlayPhase::Finished,
+            &_ => new_game_state = PlayPhase::Paused
+        }
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::ChangeGameState {
+                payer,
+                config,
+                instance_index,
+                registry_instance
+            }.to_account_metas(None),
+            data: kyogen::instruction::ChangeGameState {
+                new_game_state,
+            }.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Init Map
     // Init Tile
     // Init Player
