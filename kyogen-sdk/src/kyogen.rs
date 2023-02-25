@@ -4,7 +4,7 @@ use core_ds::account::MaxSize;
 use core_ds::constant::SEEDS_REGISTRYINSTANCE_PREFIX;
 use core_ds::state::SerializedComponent;
 use kyogen::account::{GameConfig, PlayPhase};
-use kyogen::constant::{SEEDS_BLUEPRINT, SEEDS_PACK, SEEDS_INSTANCEINDEX};
+use kyogen::constant::*;
 use registry::constant::{SEEDS_REGISTRYINDEX, SEEDS_ACTIONBUNDLEREGISTRATION};
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen::{from_value, to_value};
@@ -433,8 +433,103 @@ impl Kyogen {
         };
         to_value(&ix).unwrap()
     }
-    
+
     // Init Player
+    pub fn init_player(&self, instance: u64, entity_id:u64, name:String, clan_str: &str) -> JsValue {
+        let payer = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
+        let player_entity = get_key_from_id(&self.core_id, &registry_instance, entity_id);
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        let clan: Clans;
+        let pack: Pubkey;
+
+        match clan_str {
+            "Ancients" => {
+                clan = Clans::Ancients;
+                pack = Pubkey::find_program_address(&[
+                    SEEDS_PACK,
+                    STARTING_CARDS_ANCIENTS_NAME.as_bytes().as_ref(),
+                ], &self.kyogen_id).0;
+            },
+            "Creepers" => {
+                clan = Clans::Creepers;
+                pack = Pubkey::find_program_address(&[
+                    SEEDS_PACK,
+                    STARTING_CARDS_CREEPERS_NAME.as_bytes().as_ref(),
+                ], &self.kyogen_id).0;
+            },
+            "Wildings" => {
+                clan = Clans::Wildings;
+                pack = Pubkey::find_program_address(&[
+                    SEEDS_PACK,
+                    STARTING_CARDS_WILDINGS_NAME.as_bytes().as_ref(),
+                ], &self.kyogen_id).0;
+
+            },
+            "Synths" => {
+                clan = Clans::Synths;
+                pack = Pubkey::find_program_address(&[
+                    SEEDS_PACK,
+                    STARTING_CARDS_SYNTHS_NAME.as_bytes().as_ref(),
+                ], &self.kyogen_id).0;
+            },
+            &_ => {
+                clan = Clans::Ancients;
+                pack = Pubkey::find_program_address(&[
+                    SEEDS_PACK,
+                    STARTING_CARDS_ANCIENTS_NAME.as_bytes().as_ref(),
+                ], &self.kyogen_id).0;
+            },
+        };
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::InitPlayer {
+                payer,
+                system_program,
+                config, 
+                instance_index,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                registry_instance,
+                coreds,
+                player_entity,
+                pack,
+            }.to_account_metas(None),
+            data: kyogen::instruction::InitPlayer {
+                entity_id,
+                name,
+                clan,
+            }.data()
+        };
+        to_value(&ix).unwrap()
+
+    }
+
     // Claim Spawn
     // Spawn Unit
     // Move Unit
