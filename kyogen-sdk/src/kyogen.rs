@@ -647,6 +647,61 @@ impl Kyogen {
     }
 
     // Move Unit
+    pub fn move_unit(&self, instance:u64, unit_id:u64, player_id:u64, from_tile_id:u64, to_tile_id: u64) -> JsValue {
+        let payer = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
+        let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
+        let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
+
+        let from = get_key_from_id(&self.core_id, &registry_instance, from_tile_id);
+        let to = get_key_from_id(&self.core_id, &registry_instance, to_tile_id);
+
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::MoveUnit {
+                payer,
+                system_program,
+                config, 
+                instance_index,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                registry_instance,
+                coreds,
+                player,
+                unit,
+                from,
+                to
+            }.to_account_metas(None),
+            data: kyogen::instruction::MoveUnit {}.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
     // Attack Unit
 }
 
