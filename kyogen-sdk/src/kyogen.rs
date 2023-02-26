@@ -135,11 +135,19 @@ impl Kyogen {
             let structure;
             let structure_json = blueprint_components.structure.unwrap();
             match structure_json.structure {
-                StructureTypeJSON::Lootable { pack } => {
+                StructureTypeJSON::Lootable { 
+                    ancients_pack,
+                    wildings_pack,
+                    creepers_pack,
+                    synths_pack
+                } => {
                     structure = ComponentStructure {
                         cost: structure_json.cost,
                         structure: StructureType::Lootable { 
-                            pack: Pubkey::from_str(pack.as_str()).unwrap() 
+                            ancients_pack: Pubkey::from_str(&ancients_pack.as_str()).unwrap(),
+                            wildings_pack: Pubkey::from_str(&wildings_pack.as_str()).unwrap(),
+                            creepers_pack: Pubkey::from_str(&creepers_pack.as_str()).unwrap(), 
+                            synths_pack: Pubkey::from_str(&synths_pack.as_str()).unwrap()
                         }
                     }
                 }
@@ -194,6 +202,9 @@ impl Kyogen {
     }
 
     // Register Pack
+    /**
+     * Pass in a pubkey strings of the blueprints
+     */
     pub fn register_pack(&self, name:String, blueprints_list: JsValue) -> JsValue {
         let pubkey_list:Vec<String> = from_value(blueprints_list).unwrap();
         let blueprints:Vec<Pubkey> = pubkey_list.iter().map(|key| {

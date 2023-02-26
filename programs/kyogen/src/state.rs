@@ -16,7 +16,7 @@ pub struct KyogenComponentKeys {
     pub health: Pubkey,         // Troop
     pub damage: Pubkey,         // Troop
     pub troop_class: Pubkey,    // Troop
-    pub active: Pubkey,         // Troop
+    pub active: Pubkey,         // Troop, Structure
     pub image: Pubkey           // Any
 }
 

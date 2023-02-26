@@ -1,0 +1,45 @@
+---
+metadata:
+  name: "Healer"
+image:
+  link: "healer.png"
+last_used:
+  last_used: 0
+  recovery: 60 #30s
+active:
+  active: true
+structure:
+  cost: 10
+  structure_type:
+    healer:
+      heal_amt: 10
+---
+metadata:
+  name: "Portal"
+image:
+  link: "portal.png"
+last_used:
+  last_used: 0
+  recovery: 60 #30s
+active:
+  active: true
+structure:
+  cost: 10
+  structure_type:
+    portal:
+      channel: 1
+---
+metadata:
+  name: "Barracks"
+image:
+  link: "barracks.png"
+last_used:
+  last_used: 0
+  recovery: 60 #30s
+active:
+  active: true
+structure:
+  cost: 0
+  structure_type:
+    lootable:
+      pack: Barracks # Process this into a Pack Pubkey

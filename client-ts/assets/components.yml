@@ -1,0 +1,20 @@
+# Component Name: Component URI
+
+# KYOGEN Componets
+metadata: metadata
+mapmeta: mapmeta
+location: location
+spawn: spawn
+occupant: occupant
+player_stats: player_stats
+owner: owner
+last_used: last_used
+range: range
+health: health
+damage: damage
+troop_class: troop_class
+active: active
+image: image
+
+# STRUCTURES Components
+structure: structure

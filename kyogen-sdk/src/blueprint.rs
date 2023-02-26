@@ -1,6 +1,5 @@
 
 use kyogen::component::*;
-use structures::component::*;
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
@@ -44,7 +43,10 @@ pub enum StructureTypeJSON {
         heal_amt: u64,
     },
     Lootable {
-        pack: String
+        ancients_pack: String,
+        wildings_pack: String,
+        creepers_pack: String,
+        synths_pack: String,
     },
     Meteor {
         solarite_per_use: u64

@@ -22,7 +22,7 @@ pub struct ComponentStructure {
 
 impl MaxSize for ComponentStructure {
     fn get_max_size() -> u64 {
-        return 8 + 1 + 32;
+        return 8 + 1 + (32*4);
     }
 }
 
@@ -36,7 +36,10 @@ pub enum StructureType {
         heal_amt: u64,
     },
     Lootable {
-        pack: Pubkey
+        ancients_pack: Pubkey,
+        wildings_pack: Pubkey,
+        creepers_pack: Pubkey,
+        synths_pack: Pubkey,
     },
     Meteor {
         solarite_per_use: u64
