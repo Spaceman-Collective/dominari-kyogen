@@ -106,11 +106,12 @@ async function register_ab() {
     let instructions = [];
     // Register Kyogen
     instructions.push(ixWasmToJs(registry.register_action_bundle(sdk.Kyogen.get_kyogen_signer_str(programs.KYOGEN.toString()))));
+
     // Register Components w/ Kyogen
-    instructions.push(registry.add_components_to_action_bundle_registration(
+    instructions.push(ixWasmToJs(registry.add_components_to_action_bundle_registration(
         sdk.Kyogen.get_kyogen_signer_str(programs.KYOGEN.toString()),
         Object.values(components)
-    ));
+    )));
     // TODO: Register Structures
 
     // Submit Tx
@@ -127,6 +128,7 @@ async function register_ab() {
         await CONNECTION.confirmTransaction(sig);
         console.log("TX Confirmed: ", sig);  
     }
+    console.log("Action Bundles registered...");
 }
 
 async function register_blueprints() {
@@ -143,6 +145,7 @@ async function register_blueprints() {
             )
         )
     }
+    console.log("Prepared unit blueprints...");
     // Structures
     for(let structure of structures){
         instructions.push(
@@ -155,8 +158,10 @@ async function register_blueprints() {
             )
         )
     }
-
+    console.log("Prepared structure blueprints...");
     // Submit Tx
+    // All blueprints registrations can be submitted together
+    let txs = [];
     let ix_group = await ixPack(instructions);
     for(let group of ix_group){
         const msg = new anchor.web3.TransactionMessage({
@@ -167,9 +172,11 @@ async function register_blueprints() {
         const tx = new anchor.web3.VersionedTransaction(msg);
         tx.sign([ADMIN_KEY]);
         const sig = await CONNECTION.sendTransaction(tx);
-        await CONNECTION.confirmTransaction(sig);
-        console.log("TX Confirmed: ", sig);  
+        txs.push(CONNECTION.confirmTransaction(sig))
     }
+    Promise.all(txs).then(() => {
+        console.log("Blueprints registered...");
+    })
 }
 
 async function register_packs(){
@@ -185,13 +192,15 @@ async function register_packs(){
                                 ],programs.KYOGEN)[0].toString()
                             })
 
-        instructions.push(kyogen.register_pack(
+        instructions.push(ixWasmToJs(kyogen.register_pack(
             pack.name,
             card_keys
-        ));
+        )));
     }
 
     // Submit Tx
+    // Packs can be submitted together
+    let txs = [];
     let ix_group = await ixPack(instructions);
     for(let group of ix_group){
         const msg = new anchor.web3.TransactionMessage({
@@ -202,7 +211,9 @@ async function register_packs(){
         const tx = new anchor.web3.VersionedTransaction(msg);
         tx.sign([ADMIN_KEY]);
         const sig = await CONNECTION.sendTransaction(tx);
-        await CONNECTION.confirmTransaction(sig);
-        console.log("TX Confirmed: ", sig);  
+        txs.push(CONNECTION.confirmTransaction(sig));
     }
+    Promise.all(txs).then(() => {
+        console.log("Packs registered...");
+    })
 }

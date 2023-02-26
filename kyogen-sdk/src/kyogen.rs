@@ -126,7 +126,7 @@ impl Kyogen {
         if blueprint_components.image.is_some() {
             components.insert(kyogen_ref.image, SerializedComponent { 
                 max_size: ComponentActive::get_max_size(), 
-                data: blueprint_components.active.as_ref().unwrap().try_to_vec().unwrap()
+                data: blueprint_components.image.as_ref().unwrap().try_to_vec().unwrap()
             });
         }
 
@@ -144,10 +144,22 @@ impl Kyogen {
                     structure = ComponentStructure {
                         cost: structure_json.cost,
                         structure: StructureType::Lootable { 
-                            ancients_pack: Pubkey::from_str(&ancients_pack.as_str()).unwrap(),
-                            wildings_pack: Pubkey::from_str(&wildings_pack.as_str()).unwrap(),
-                            creepers_pack: Pubkey::from_str(&creepers_pack.as_str()).unwrap(), 
-                            synths_pack: Pubkey::from_str(&synths_pack.as_str()).unwrap()
+                            ancients_pack: Pubkey::find_program_address(&[
+                                SEEDS_PACK,
+                                ancients_pack.as_bytes().as_ref(),
+                            ], &self.kyogen_id).0,
+                            wildings_pack: Pubkey::find_program_address(&[
+                                SEEDS_PACK,
+                                wildings_pack.as_bytes().as_ref(),
+                            ], &self.kyogen_id).0,
+                            creepers_pack: Pubkey::find_program_address(&[
+                                SEEDS_PACK,
+                                creepers_pack.as_bytes().as_ref(),
+                            ], &self.kyogen_id).0, 
+                            synths_pack: Pubkey::find_program_address(&[
+                                SEEDS_PACK,
+                                synths_pack.as_bytes().as_ref(),
+                            ], &self.kyogen_id).0,
                         }
                     }
                 }

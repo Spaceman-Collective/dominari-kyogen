@@ -26,7 +26,7 @@ export const ixPack = async (ixs: anchor.web3.TransactionInstruction[]): Promise
         tempTx.feePayer = dummyKey.publicKey;
         tempTx.recentBlockhash = dummyKey.publicKey.toBase58(); //doesn't matter, just a dummy hash
         
-        if(tempTx.serializeMessage().length > 800){
+        if(tempTx.serializeMessage().length > 900){
             ixGroupArray.push(ixBuffer);
             ixBuffer = [];
         }

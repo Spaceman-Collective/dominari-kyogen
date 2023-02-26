@@ -10,8 +10,8 @@ active:
   active: true
 structure:
   cost: 10
-  structure_type:
-    healer:
+  structure:
+    Healer:
       heal_amt: 10
 ---
 metadata:
@@ -25,8 +25,8 @@ active:
   active: true
 structure:
   cost: 10
-  structure_type:
-    portal:
+  structure:
+    Portal:
       channel: 1
 ---
 metadata:
@@ -40,6 +40,9 @@ active:
   active: true
 structure:
   cost: 0
-  structure_type:
-    lootable:
-      pack: Barracks # Process this into a Pack Pubkey
+  structure:
+    Lootable:
+      ancients_pack: Ancient_Barracks
+      wildings_pack: Wilding_Barracks
+      creepers_pack: Creeper_Barracks
+      synths_pack: Synth_Barracks

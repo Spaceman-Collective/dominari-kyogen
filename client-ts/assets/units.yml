@@ -10,13 +10,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 3
+  min_damage: 3
   max_damage: 12
   bonus_samurai: 0
   bonus_sohei: 1
   bonus_shinobi: 0
 troop_class:
-  class: Samurai
+  Samurai: 
 image: 
   link: "ancient_samurai.png"
 ---
@@ -31,13 +31,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 3
+  min_damage: 3
   max_damage: 12
   bonus_samurai: 0
   bonus_sohei: 1
   bonus_shinobi: 0
 troop_class:
-  class: Samurai
+  Samurai:
 image: 
   link: "creeper_samurai.png"
 ---
@@ -52,13 +52,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 4
+  min_damage: 4
   max_damage: 14
   bonus_samurai: 0
   bonus_sohei: 1
   bonus_shinobi: 0
 troop_class:
-  class: Samurai
+  Samurai:
 image: 
   link: "wiilding_samurai.png"
 ---
@@ -73,13 +73,13 @@ range:
 health:
   health: 12
 damage:
-  min_damange: 3
+  min_damage: 3
   max_damage: 12
   bonus_samurai: 0
   bonus_sohei: 1
   bonus_shinobi: 0
 troop_class:
-  class: Samurai
+  Samurai:
 image: 
   link: "synth_samurai.png"
 ---
@@ -94,13 +94,13 @@ range:
 health:
   health: 14
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 0
   bonus_sohei: 0
   bonus_shinobi: 1
 troop_class:
-  class: Sohei
+  Sohei:
 image: 
   link: "ancient_sohei.png"
 ---
@@ -115,13 +115,13 @@ range:
 health:
   health: 14
 damage:
-  min_damange: 2
+  min_damage: 2
   max_damage: 12
   bonus_samurai: 0
   bonus_sohei: 0
   bonus_shinobi: 1
 troop_class:
-  class: Sohei
+  Sohei:
 image: 
   link: "creeper_sohei.png"
 ---
@@ -136,13 +136,13 @@ range:
 health:
   health: 14
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 0
   bonus_sohei: 0
   bonus_shinobi: 1
 troop_class:
-  class: Sohei
+  Sohei:
 image: 
   link: "wilding_sohei.png"
 ---
@@ -157,13 +157,13 @@ range:
 health:
   health: 16
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 0
   bonus_sohei: 0
   bonus_shinobi: 1
 troop_class:
-  class: Sohei
+  Sohei:
 image: 
   link: "synth_sohei.png"
 ---
@@ -178,13 +178,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 1
   bonus_sohei: 0
   bonus_shinobi: 0
 troop_class:
-  class: Shinobi
+  Shinobi:
 image: 
   link: "ancient_shinobi.png"
 ---
@@ -199,13 +199,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 1
   bonus_sohei: 0
   bonus_shinobi: 0
 troop_class:
-  class: Shinobi
+  Shinobi:
 image: 
   link: "creeper_shinobi.png"
 ---
@@ -220,13 +220,13 @@ range:
 health:
   health: 10
 damage:
-  min_damange: 2
+  min_damage: 2
   max_damage: 12
   bonus_samurai: 1
   bonus_sohei: 0
   bonus_shinobi: 0
 troop_class:
-  class: Shinobi
+  Shinobi:
 image: 
   link: "wilding_shinobi.png"
 ---
@@ -241,12 +241,12 @@ range:
 health:
   health: 12
 damage:
-  min_damange: 1
+  min_damage: 1
   max_damage: 10
   bonus_samurai: 1
   bonus_sohei: 0
   bonus_shinobi: 0
 troop_class:
-  class: Shinobi
+  Shinobi:
 image: 
   link: "synth_shinobi.png"

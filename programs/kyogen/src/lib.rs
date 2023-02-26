@@ -22,7 +22,7 @@ use state::*;
 use core_ds::account::MaxSize;
 use core_ds::state::SerializedComponent;
 
-declare_id!("3YdayPtujByJ1g1DWEUh7vpg78gZL49FWyD5rDGyof9T");
+declare_id!("CTQCiB97LrAjAtHy1eqGwqGiy2mjefBXR762nrDhWYTL");
 
 #[program]
 pub mod kyogen {

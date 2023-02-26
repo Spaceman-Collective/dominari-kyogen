@@ -34,3 +34,27 @@ cards:
   - Synth Sohei
   - Synth Shinobi
   - Synth Shinobi
+---
+name: Ancient_Barracks
+cards: 
+  - Ancient Samurai
+  - Ancient Sohei
+  - Ancient Shinobi
+---
+name: Wilding_Barracks
+cards: 
+  - Wilding Samurai
+  - Wilding Sohei
+  - Wilding Shinobi
+---
+name: Creeper_Barracks
+cards: 
+  - Creeper Samurai
+  - Creeper Sohei
+  - Creeper Shinobi
+---
+name: Synth_Barracks
+cards: 
+  - Synth Samurai
+  - Synth Sohei
+  - Synth Shinobi
