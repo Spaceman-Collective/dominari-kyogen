@@ -10,8 +10,6 @@
 7. Register ABs  (Kyogen, Structures, Cards)
 8. Register AB w/ Components
 
-## Other Setup
-1. Mint an SPL token and give it to Instance Index (for Solarite transfers)
-
 ## Game Setup
 1. After Creating Game with Kyogen, init_index Structures & Cards with same payer, they'll CPI into Registry to register themselves
+2. Mint an SPL token and give it to Instance Index (for Solarite transfers)

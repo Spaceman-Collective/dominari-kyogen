@@ -237,7 +237,7 @@ pub mod kyogen {
         let mut components: BTreeMap<Pubkey, SerializedComponent> = BTreeMap::new();
         // Feature has Metadata, Location, Owner, Active, and ..Blueprint Components
         let metadata_component = ComponentMetadata {
-            name: ctx.accounts.payer.key().to_string(),
+            name: format!("{}:{}", ctx.accounts.payer.key().to_string(), name),
             registry_instance: ctx.accounts.registry_instance.key(),
         }.try_to_vec().unwrap();
         components.insert(reference.metadata.key(), SerializedComponent { 
@@ -278,7 +278,7 @@ pub mod kyogen {
             name,
             key: ctx.accounts.payer.key(),
             score: 0,
-            kills: 0,
+            solarite: 0,
             cards: starting_cards,
             clan: clan.clone(),
         }.try_to_vec().unwrap();

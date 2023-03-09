@@ -5,4 +5,5 @@ pub mod registry;
 pub mod coreds;
 pub mod blueprint;
 pub mod json_wrappers;
+pub mod gamestate;
 extern crate console_error_panic_hook;

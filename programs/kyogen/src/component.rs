@@ -87,8 +87,8 @@ impl MaxSize for ComponentOccupant {
 pub struct ComponentPlayerStats{
     pub name: String,
     pub key: Pubkey, //owner key
-    pub score: u64,
-    pub kills: u64,
+    pub solarite: u64,
+    pub score: u64, // Total Solarite Mined
     // Blueprints for Cards, PDA for Pack, String for Blueprint name
     pub cards: Vec<Pubkey>,
     pub clan: Clans, 
