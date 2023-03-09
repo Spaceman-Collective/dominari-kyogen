@@ -1,3 +1,33 @@
 max_players: 4
-game_token: <replace w/ mint>
+game_token: "replace w/ mint"
 spawn_claim_multiplier: 1.1
+mapmeta: 
+  max_x: 8
+  max_y: 8
+spawns:
+  -
+    x: 0
+    y: 0
+    cost: 10
+  -
+    x: 7
+    y: 0
+    cost: 10
+  -
+    x: 0
+    y: 7
+    cost: 10
+  -
+    x: 7
+    y: 7
+    cost: 10
+  
+structures: 
+  - 
+    x: 1
+    y: 1
+    structure_blueprint: "Healer"
+  - 
+    x: 2
+    y: 2
+    structure_blueprint: "Portal"

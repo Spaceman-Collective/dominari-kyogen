@@ -129,19 +129,4 @@ pub mod structures {
     
     // Use Structure (each structure has a unique function)
 
-    
-    
-    
-    // Start Meteor Shower
-        // Takes in Structure Account
-        // Starts a CLWRK thread that toggles active every minute based on roll
-
-
 }
-
-
-/* MOVE TO STRUCTURE LAYER */
-// Init Feature
-// Use Feature
-// Start Meteor Shower
-/* MOVE TO STRUCTURE LAYERS */

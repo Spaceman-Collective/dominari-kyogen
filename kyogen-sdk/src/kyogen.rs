@@ -249,7 +249,7 @@ impl Kyogen {
 
     // Create Game Instance
     pub fn create_game_instance(&self, instance: u64, game_config_json: JsValue) -> JsValue {
-        let game_config: GameConfigJson = from_value(game_config_json).unwrap();
+        let game_config: GameConfigJSON = from_value(game_config_json).unwrap();
         let payer = self.payer;
 
         // CoreDS

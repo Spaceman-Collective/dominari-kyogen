@@ -3,7 +3,7 @@ dotenv.config();
 import * as anchor from '@coral-xyz/anchor';
 import {readFileSync} from 'fs';
 import * as sdk from '../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
-import { ixWasmToJs, ixPack, randomU64 } from './util';
+import { ixWasmToJs, ixPack } from './util';
 import YAML from 'yaml';
 
 const programs = {
