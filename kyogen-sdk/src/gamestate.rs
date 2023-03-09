@@ -60,22 +60,21 @@ impl GameState {
         }
     }
 
-    pub async fn update_instance_index(&mut self) {
+    pub async fn update_kyogen_index(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
 
-        let instance_index = Pubkey::find_program_address(&[
+        let kyogen_index = Pubkey::find_program_address(&[
             kyogen::constant::SEEDS_INSTANCEINDEX,
             registry_instance.to_bytes().as_ref(),
         ], &self.kyogen_id).0;
 
-        let index:KyogenIndex = fetch_account(&self.client, &instance_index).await.unwrap();
+        let index:KyogenIndex = fetch_account(&self.client, &kyogen_index).await.unwrap();
         self.kyogen_index = Some(index.clone());
     }
 
     pub async fn load_state(&mut self) {
-        self.is_state_loaded = true;
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
-        self.update_instance_index().await;
+        self.update_kyogen_index().await;
         
         let mut entities: HashMap<u64, Entity> = HashMap::new();
         entities.insert(
@@ -145,7 +144,7 @@ impl GameState {
         // TODO: Load Structures Index
         // TODO: Load Structures Entities
 
-
+        self.is_state_loaded = true;
         self.entities = entities;
     }
 
