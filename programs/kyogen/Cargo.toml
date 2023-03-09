@@ -18,7 +18,7 @@ sdk = ["dep:serde"]
 
 [dependencies]
 anchor-lang = "0.26.0"
-core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
+core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"], branch="main" }
 registry = { path = "../registry", features = ["cpi"]}
 serde = { version = "1.0.147", optional=true }
 solana-program = "=1.14.11"

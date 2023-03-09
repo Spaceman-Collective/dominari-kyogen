@@ -8,7 +8,7 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"] }
+core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"], branch="main" }
 registry = { path="../programs/registry", features=["no-entrypoint"]}
 kyogen = { path="../programs/kyogen", features=["no-entrypoint", "sdk"]}
 structures = { path="../programs/structures", features=["no-entrypoint", "sdk"]}

@@ -65,7 +65,7 @@ pub mod kyogen {
         ];
         let signer_seeds = &[config_seeds];
 
-        // Instance the World
+        // Instance the Registry
         let instance_ctx = CpiContext::new_with_signer(
             ctx.accounts.registry_program.to_account_info(),
             registry::cpi::accounts::InstanceRegistry {

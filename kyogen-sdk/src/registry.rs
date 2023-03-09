@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use registry::constant::SEEDS_REGISTRYSIGNER;
+use registry::constant::{SEEDS_REGISTRYSIGNER, SEEDS_REGISTRYINDEX};
 use wasm_bindgen::prelude::*;
 use anchor_lang::{prelude::*, solana_program::instruction::Instruction, InstructionData};
 use serde_wasm_bindgen::{to_value, from_value};
@@ -133,6 +133,34 @@ impl Registry {
             data: registry::instruction::AddComponentsToActionBundleRegistration {
                 components,
             }.data()
+        };
+
+        to_value(&ix).unwrap()
+    }
+
+    pub fn append_registry_index(&self, ab_signer: &str, instance: u64) -> JsValue {
+        let payer = self.payer;
+
+        let registry_index = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINDEX,
+            instance.to_be_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        let action_bundle_signer = Pubkey::from_str(ab_signer).unwrap();
+        let action_bundle_registration = Pubkey::find_program_address(&[
+            registry::constant::SEEDS_ACTIONBUNDLEREGISTRATION,
+            action_bundle_signer.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        let ix = Instruction {
+            program_id: self.registry_id,
+            accounts: registry::accounts::AppendRegistryIndex {
+                payer, 
+                system_program,
+                registry_index,
+                action_bundle_registration,
+            }.to_account_metas(None),
+            data: registry::instruction::AppendRegistryIndex {}.data()
         };
 
         to_value(&ix).unwrap()

@@ -29,6 +29,7 @@ let kyogen = new sdk.Kyogen(
 let component_index = new sdk.ComponentIndex(programs.REGISTRY.toString());
 let config = YAML.parse(readFileSync('./configs/4PlayerTest.yml', {encoding: "utf-8"}));
 
+main();
 async function main(){
     // Assume 01_InitProgram.ts has been run
 
@@ -38,6 +39,9 @@ async function main(){
 
     // Create Kyogen Game instance
     const instance = await create_game_instance();
+
+    // Register ABs for Instance
+    await append_registry_index(instance);
 
     // TODO: Init Index for Structures
     // TODO: Mint Tokens into Structure Index
@@ -58,7 +62,7 @@ async function create_game_instance(): Promise<bigint> {
         kyogen.create_game_instance(newInstanceId, {
             max_players: config.max_players,
             game_token: config.game_token,
-            spawn_multiplier: config.spawn_multiplier
+            spawn_claim_multiplier: config.spawn_claim_multiplier
         })
     );
     
@@ -74,6 +78,30 @@ async function create_game_instance(): Promise<bigint> {
     console.log(`Game Instance ${newInstanceId.toString()} created: ${sig}`); 
 
     return newInstanceId;
+}
+
+async function append_registry_index(instance: bigint) {
+    // Append Kyogen AB
+    const appendKyogenIx = ixWasmToJs(
+        registry.append_registry_index(
+            sdk.Kyogen.get_kyogen_signer_str(programs.KYOGEN.toString()),
+            instance,
+        )
+    )
+    // TODO: Append Structures AB
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: ADMIN_KEY.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            appendKyogenIx
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([ADMIN_KEY]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);    
+    console.log("Action bundles registered with instance...");
 }
 
 async function init_map(instance: bigint) {
