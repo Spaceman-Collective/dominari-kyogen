@@ -39,6 +39,7 @@ async function main(){
 
     // Create Kyogen Game instance
     const instance = await create_game_instance();
+    console.log("Game Instance: ", instance.toString());
 
     // Register ABs for Instance
     await append_registry_index(instance);
@@ -145,7 +146,8 @@ async function init_tiles(instance:bigint) {
                     spawnable,
                     spawnCost
                 )
-            );   
+            );
+            tileIxGroup.push(initTileIx);   
         }
     }
 

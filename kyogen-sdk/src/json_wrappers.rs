@@ -68,6 +68,7 @@ pub struct StructureJSON {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MapJSON {
+    pub map_id: String,
     pub tiles: Vec<TileJSON>,
     pub structures: Vec<StructureJSON>,
 }

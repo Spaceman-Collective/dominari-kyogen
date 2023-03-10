@@ -198,6 +198,7 @@ impl GameState {
         // TODO fetch from Structures Index
 
         serde_wasm_bindgen::to_value(&MapJSON{
+            map_id: self.kyogen_index.as_ref().unwrap().map.to_string(),
             tiles,
             structures,
         }).unwrap()
