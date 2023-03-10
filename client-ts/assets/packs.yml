@@ -1,60 +1,60 @@
 ---
 name: starting_cards_ancients
 cards: 
-  - Ancient Samurai
-  - Ancient Samurai
-  - Ancient Sohei
-  - Ancient Sohei
-  - Ancient Shinobi
-  - Ancient Shinobi
+  - "Ancient Samurai"
+  - "Ancient Samurai"
+  - "Ancient Sohei"
+  - "Ancient Sohei"
+  - "Ancient Shinobi"
+  - "Ancient Shinobi"
 ---
 name: starting_cards_wildings
 cards: 
-  - Wilding Samurai
-  - Wilding Samurai
-  - Wilding Sohei
-  - Wilding Sohei
-  - Wilding Shinobi
-  - Wilding Shinobi
+  - "Wilding Samurai"
+  - "Wilding Samurai"
+  - "Wilding Sohei"
+  - "Wilding Sohei"
+  - "Wilding Shinobi"
+  - "Wilding Shinobi"
 ---
 name: starting_cards_creepers
 cards: 
-  - Creeper Samurai
-  - Creeper Samurai
-  - Creeper Sohei
-  - Creeper Sohei
-  - Creeper Shinobi
-  - Creeper Shinobi
+  - "Creeper Samurai"
+  - "Creeper Samurai"
+  - "Creeper Sohei"
+  - "Creeper Sohei"
+  - "Creeper Shinobi"
+  - "Creeper Shinobi"
 ---
 name: starting_cards_synths
 cards: 
-  - Synth Samurai
-  - Synth Samurai
-  - Synth Sohei
-  - Synth Sohei
-  - Synth Shinobi
-  - Synth Shinobi
+  - "Synth Samurai"
+  - "Synth Samurai"
+  - "Synth Sohei"
+  - "Synth Sohei"
+  - "Synth Shinobi"
+  - "Synth Shinobi"
 ---
 name: Ancient_Barracks
 cards: 
-  - Ancient Samurai
-  - Ancient Sohei
-  - Ancient Shinobi
+  - "Ancient Samurai"
+  - "Ancient Sohei"
+  - "Ancient Shinobi"
 ---
 name: Wilding_Barracks
 cards: 
-  - Wilding Samurai
-  - Wilding Sohei
-  - Wilding Shinobi
+  - "Wilding Samurai"
+  - "Wilding Sohei"
+  - "Wilding Shinobi"
 ---
 name: Creeper_Barracks
 cards: 
-  - Creeper Samurai
-  - Creeper Sohei
-  - Creeper Shinobi
+  - "Creeper Samurai"
+  - "Creeper Sohei"
+  - "Creeper Shinobi"
 ---
 name: Synth_Barracks
 cards: 
-  - Synth Samurai
-  - Synth Sohei
-  - Synth Shinobi
+  - "Synth Samurai"
+  - "Synth Sohei"
+  - "Synth Shinobi"

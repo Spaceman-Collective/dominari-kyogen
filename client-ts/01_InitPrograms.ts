@@ -188,7 +188,7 @@ async function register_packs(){
                             .map((name) => {
                                 return anchor.web3.PublicKey.findProgramAddressSync([
                                     Buffer.from("blueprint"),
-                                    Buffer.from(pack.name)
+                                    Buffer.from(name)
                                 ],programs.KYOGEN)[0].toString()
                             })
 

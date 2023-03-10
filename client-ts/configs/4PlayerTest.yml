@@ -1,4 +1,4 @@
-max_players: 4
+max_players: 40
 game_token: "replace w/ mint"
 spawn_claim_multiplier: 1.1
 mapmeta: 
@@ -9,18 +9,22 @@ spawns:
     x: 0
     y: 0
     cost: 10
+    clan: Ancients
   -
     x: 7
     y: 0
     cost: 10
+    clan: Wildings
   -
     x: 0
     y: 7
     cost: 10
+    clan: Creepers
   -
     x: 7
     y: 7
     cost: 10
+    clan: Synths
   
 structures: 
   - 

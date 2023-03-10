@@ -13,7 +13,15 @@ const programs = {
     KYOGEN: new anchor.web3.PublicKey(process.env.KYOGEN_ID),
     STRUCTURES: new anchor.web3.PublicKey(process.env.STRUCTURES_ID)
 }
-const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'finalized');
+const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'confirmed');
+const ADMIN_KEY = anchor.web3.Keypair.fromSecretKey(Buffer.from(JSON.parse(readFileSync(process.env.PRIVATE_KEY_PATH).toString())));
+let kyogen = new sdk.Kyogen(
+    programs.COREDS.toString(),
+    programs.REGISTRY.toString(),
+    programs.KYOGEN.toString(),
+    ADMIN_KEY.publicKey.toString()
+);
+
 
 const PLAYER1 = new anchor.web3.Keypair();
 CONNECTION.requestAirdrop(PLAYER1.publicKey, 10e9);
@@ -43,19 +51,8 @@ let gamestate = new sdk.GameState(
     instance
 );
 
-
-simulate();
-// Basic Kyogen Simulation
-async function simulate(){
-    console.log("Instance: ", instance.toString());
-
-    // Print Map
-    await gamestate.load_state();
-    let map = gamestate.get_map();
-    console.log(map);
-    
-}
-
+// Needed to configure blueprints
+let units = YAML.parseAllDocuments(readFileSync('./assets/units.yml', {encoding: "utf-8"}));
 
 // Print state of map and players
 // Create a couple players
@@ -64,4 +61,106 @@ async function simulate(){
 // Spawn units
 // Attack units
 
+simulate();
+// Basic Kyogen Simulation
+async function simulate(){
+    console.log("Instance: ", instance.toString());
+    console.log("Waiting 5s to get airdrop confirmation.")
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 3 sec
 
+    // Load Blueprint into state
+    let unit_names = [];
+    for(let unit of units){
+        unit_names.push(unit.toJSON().metadata.name);
+    }
+    gamestate.add_blueprints(unit_names);
+
+    // Print Map
+    await gamestate.load_state();
+    let map = gamestate.get_map();
+    console.log(map);
+
+    // Create a couple players
+    await createPlayers();
+    await gamestate.load_state(); //refresh state after creating players
+    console.log("Players: ", gamestate.get_players());
+
+    // Check Player Hands
+    console.log("Player 1 Hand: ", getPlayerHand(PLAYER1));
+    console.log("Player 2 Hand: ", getPlayerHand(PLAYER2));
+
+    // Unpause the game
+    await unpause();
+
+    // Spawn Units
+
+}
+
+async function createPlayers() {
+    const ix1 = ixWasmToJs(p1kyogen.init_player(
+        instance,
+        randomU64(),
+        'Player 1',
+        'Ancients'
+    ));
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: PLAYER1.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix1
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([PLAYER1]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);    
+
+    const ix2 = ixWasmToJs(p2kyogen.init_player(
+        instance,
+        randomU64(),
+        'Player 2',
+        'Wildings'
+    ));
+    const msg2 = new anchor.web3.TransactionMessage({
+        payerKey: PLAYER2.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix2
+        ]
+    }).compileToLegacyMessage();
+    const tx2 = new anchor.web3.VersionedTransaction(msg2);
+    tx2.sign([PLAYER2]);
+    const sig2 = await CONNECTION.sendTransaction(tx2);
+    await CONNECTION.confirmTransaction(sig2);    
+
+    console.log("Players 1 and 2 Created!");
+}
+
+async function unpause() {
+    const ix1 = ixWasmToJs(
+        kyogen.change_game_state(instance, "Play")
+    );
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: ADMIN_KEY.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix1
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([ADMIN_KEY]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);    
+}
+
+function getPlayerHand(player: anchor.web3.Keypair) {
+    let players = gamestate.get_players();
+    const playerHand:string[] = players.find((playerJSON:any) => playerJSON.owner === player.publicKey.toString()).cards;
+    return playerHand.map((cardKeyString) => {
+        return gamestate.get_blueprint_name(cardKeyString);
+    });
+}
+
+async function spawnUnit(){}

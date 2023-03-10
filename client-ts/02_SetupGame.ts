@@ -124,18 +124,22 @@ async function init_map(instance: bigint) {
 }
 
 async function init_tiles(instance:bigint) {
-    // Build Spawns Array
-    let spawns: bigint[][] = new Array(config.mapmeta.max_y).fill(new Array(config.mapmeta.max_x).fill(undefined));
-    for(let spawn of config.spawns) {
-        spawns[spawn.x][spawn.y] = BigInt(spawn.cost)
-    }
-
     let tileIxGroup = [];
     for(let x=0; x<config.mapmeta.max_x; x++) {
         for(let y=0; y<config.mapmeta.max_y; y++) {
             let tileId = randomU64();
-            let spawnable = spawns[x][y] ? true : false;
-            let spawnCost = spawnable ? spawns[x][y] : BigInt(0);
+            const possibleSpawn = config.spawns.find((spawn) => {
+                if(spawn.x == x && spawn.y == y){
+                    return spawn
+                } else {
+                    return undefined;
+                }
+            })
+
+            let spawnable = possibleSpawn ? true : false;
+            let spawnCost = possibleSpawn ? BigInt(possibleSpawn.cost) : BigInt(0);
+            let clan = possibleSpawn ? possibleSpawn.clan : "";
+
 
             const initTileIx = ixWasmToJs(
                 kyogen.init_tile(
@@ -144,7 +148,8 @@ async function init_tiles(instance:bigint) {
                     x,
                     y,
                     spawnable,
-                    spawnCost
+                    spawnCost,
+                    clan,
                 )
             );
             tileIxGroup.push(initTileIx);   

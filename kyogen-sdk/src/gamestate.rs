@@ -60,6 +60,10 @@ impl GameState {
         }
     }
 
+    pub fn get_blueprint_name(&self, pubkey:String) -> String {
+        self.blueprint_index.get_blueprint_name(pubkey)
+    }
+
     pub async fn update_kyogen_index(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
 
@@ -202,6 +206,19 @@ impl GameState {
             tiles,
             structures,
         }).unwrap()
+    }
+
+    pub fn get_players(&self) -> JsValue {
+        if self.kyogen_index.is_none() {
+            throw_str("Load state first!")
+        }
+        let mut players: Vec<PlayerJSON> = vec![];
+
+        for player_id in self.kyogen_index.as_ref().unwrap().players.iter() {
+            players.push(self.get_player_info(*player_id));
+        };
+
+        serde_wasm_bindgen::to_value(&players).unwrap()
     }
 }
 

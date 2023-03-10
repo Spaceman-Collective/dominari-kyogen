@@ -403,7 +403,7 @@ impl Kyogen {
     }
 
     // Init Tile
-    pub fn init_tile(&self, instance: u64, entity_id: u64, x:u8, y:u8, spawnable: bool, spawn_cost:u64) -> JsValue {
+    pub fn init_tile(&self, instance: u64, entity_id: u64, x:u8, y:u8, spawnable: bool, spawn_cost:u64, clan_str: &str) -> JsValue {
         let payer = self.payer;
 
         // CoreDS
@@ -431,6 +431,14 @@ impl Kyogen {
             config.to_bytes().as_ref(),
         ], &self.registry_id).0;
 
+        let clan; 
+        match clan_str {
+            "Ancients" => {clan = Some(Clans::Ancients)},
+            "Wildings" => {clan = Some(Clans::Wildings)},
+            "Creepers" => {clan = Some(Clans::Creepers)},
+            "Synths" => {clan = Some(Clans::Synths)},
+            &_ => {clan = None}
+        }
 
         let ix = Instruction {
             program_id: self.kyogen_id,
@@ -451,7 +459,8 @@ impl Kyogen {
                 x,
                 y,
                 spawnable,
-                spawn_cost
+                spawn_cost,
+                clan,
             }.data()
         };
         to_value(&ix).unwrap()

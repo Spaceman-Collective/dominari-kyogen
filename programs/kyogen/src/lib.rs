@@ -150,7 +150,7 @@ pub mod kyogen {
     }
 
     // Init Tile
-    pub fn init_tile(ctx:Context<InitTile>, entity_id:u64, x:u8, y:u8, spawnable: bool, spawn_cost: u64) -> Result<()> {
+    pub fn init_tile(ctx:Context<InitTile>, entity_id:u64, x:u8, y:u8, spawnable: bool, spawn_cost: u64, clan: Option<Clans>) -> Result<()> {
         // Tile can only be instanced by Admin
         // So we can trust in the input for x,y isn't duplicated
         let reference = &ctx.accounts.config.components;
@@ -186,7 +186,7 @@ pub mod kyogen {
 
         let spawnable = ComponentSpawn {
             spawnable,
-            clan: None,
+            clan,
             cost: spawn_cost
         }.try_to_vec().unwrap();
         components.insert(reference.spawn.key(), SerializedComponent { 
