@@ -13,6 +13,7 @@
 1. Download Source Code 
 2. (Generate SDK) Run `cd kyogen-sdk && ./build-all.sh && cd ../`
 3. (Build program, run local validator with programs) Run `./local_validator.sh`
-4. Run `cd client-ts`
-5. (Initalize Programs) Run `ts-node 01_InitPrograms.ts`
-6. (Create a game) Run `ts-node 02_SetupGame.ts`
+4. Add `.env.local` and set local `PRIVATE_KEY_PATH`
+5. Run `cd client-ts`
+6. (Initalize Programs) Run `ts-node 01_InitPrograms.ts`
+7. (Create a game) Run `ts-node 02_SetupGame.ts`

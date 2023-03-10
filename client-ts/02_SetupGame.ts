@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
+dotenv.config({ path: `.env.local`, override: true });
 import * as anchor from '@coral-xyz/anchor';
 import {readFileSync} from 'fs';
 import * as sdk from '../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
