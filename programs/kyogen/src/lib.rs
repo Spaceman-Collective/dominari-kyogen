@@ -563,8 +563,8 @@ pub mod kyogen {
         }
         let unit_owner_c = ctx.accounts.unit.components.get(&reference.owner).unwrap();
         let unit_owner = ComponentOwner::try_from_slice(&unit_owner_c.data.as_slice()).unwrap();
-        if unit_owner.owner.unwrap() == ctx.accounts.payer.key() ||
-            unit_owner.player.unwrap() == ctx.accounts.player.entity_id {
+        if unit_owner.owner.unwrap() != ctx.accounts.payer.key() ||
+            unit_owner.player.unwrap() != ctx.accounts.player.entity_id {
             return err!(KyogenError::WrongPlayer)
         }
 
