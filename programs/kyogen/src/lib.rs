@@ -336,7 +336,7 @@ pub mod kyogen {
         let unit_c = ctx.accounts.tile_entity.components.get(&reference.occupant).unwrap();
         let unit_component = ComponentOccupant::try_from_slice(unit_c.data.as_slice()).unwrap();
         if unit_component.occupant_id.is_none(){
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::NoOccupantOnTile)
         }
             // Unit that's passed is the Tile Unit
         if unit_component.occupant_id.unwrap() != ctx.accounts.unit_entity.entity_id {
@@ -346,20 +346,20 @@ pub mod kyogen {
         let owner_c = ctx.accounts.unit_entity.components.get(&reference.owner).unwrap();
         let owner_component = ComponentOwner::try_from_slice(&owner_c.data.as_slice()).unwrap();
         if owner_component.owner.unwrap() != ctx.accounts.payer.key() {
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::PlayerDoesntOwnUnit)
         }
 
         // Check that tile is Spawnable
         let spawn_c = ctx.accounts.tile_entity.components.get(&reference.spawn).unwrap();
         let mut spawn_component = ComponentSpawn::try_from_slice(spawn_c.data.as_slice()).unwrap();
         if !spawn_component.spawnable {
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::TileIsNotSpawnable)
         }
         // Check that Spawn isn't already Player's Clans'
         let player_stats_c = ctx.accounts.player_entity.components.get(&reference.player_stats).unwrap();
         let player_stats_component = ComponentPlayerStats::try_from_slice(&player_stats_c.data.as_slice()).unwrap();
         if player_stats_component.clan != spawn_component.clan.unwrap() {
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::TileAlreadyClaimed)
         } 
         // Charge the Player GAME TOKEN to claim the spawn
         let transfer_accounts = Transfer{
@@ -430,7 +430,7 @@ pub mod kyogen {
         let tile_occupant_component = ctx.accounts.tile.components.get(&reference.occupant).unwrap();
         let mut tile_occupant = ComponentOccupant::try_from_slice(&tile_occupant_component.data.as_slice()).unwrap();
         if tile_occupant.occupant_id.is_some() {
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::TileIsNotEmpty)
         }
         // Check that Tile is spawnable and belongs to player Clan
         let tile_spawnable_component = ctx.accounts.tile.components.get(&reference.spawn).unwrap();
@@ -439,7 +439,7 @@ pub mod kyogen {
             tile_spawn.clan.is_none() || 
             tile_spawn.clan.unwrap() != player_stats.clan    
         {
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::TileIsNotSpawnable)
         }
 
         // Check that blueprint is in player hand
@@ -572,7 +572,7 @@ pub mod kyogen {
         let to_occupant_c = ctx.accounts.to.components.get(&reference.occupant).unwrap();
         let mut to_occupant = ComponentOccupant::try_from_slice(&to_occupant_c.data.as_slice()).unwrap();
         if to_occupant.occupant_id.is_some() {
-            return err!(KyogenError::WrongTile)
+            return err!(KyogenError::TileOccupied)
         }
 
         // Unit is recovered from last used
@@ -594,7 +594,7 @@ pub mod kyogen {
         let unit_range_component = ctx.accounts.unit.components.get(&reference.range).unwrap();
         let unit_range = ComponentRange::try_from_slice(&unit_range_component.data.as_slice()).unwrap();
         if unit_range.movement < distance.floor() as u8 {
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::TileOutOfRange)
         }
 
         let system_signer_seeds:&[&[u8]] = &[
@@ -691,14 +691,14 @@ pub mod kyogen {
         let attacker_owner_c = attacker.components.get(&reference.owner).unwrap();
         let attacker_owner = ComponentOwner::try_from_slice(&attacker_owner_c.data.as_slice()).unwrap();
         if attacker_owner.owner != Some(ctx.accounts.payer.key()) {
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::PlayerDoesntOwnUnit)
         }
 
         // Check defender is NOT owned by payer
         let defender_owner_c = defender.components.get(&reference.owner).unwrap();
         let defender_owner = ComponentOwner::try_from_slice(&defender_owner_c.data.as_slice()).unwrap();
         if defender_owner.player == attacker_owner.player {
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::AttackingSelfOwnedUnit)
         }
 
         // Check that attacker and defender are active
@@ -707,7 +707,7 @@ pub mod kyogen {
         let defender_active_c = defender.components.get(&reference.active).unwrap();
         let mut defender_active = ComponentActive::try_from_slice(&defender_active_c.data.as_slice()).unwrap();       
         if attacker_active.active == false || defender_active.active == false{
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::UnitNotActive)
         }
 
         // Defending Tile unit is Defender
@@ -727,7 +727,7 @@ pub mod kyogen {
         let attacker_range_c = attacker.components.get(&reference.range).unwrap();
         let attacker_range = ComponentRange::try_from_slice(&attacker_range_c.data.as_slice()).unwrap();
         if distance.floor() as u8 > attacker_range.attack_range {
-            return err!(KyogenError::WrongUnit)
+            return err!(KyogenError::TileOutOfRange)
         }
 
         // Attacker last used is valid

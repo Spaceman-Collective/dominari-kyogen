@@ -4,7 +4,6 @@ use kyogen::{account::{InstanceIndex as KyogenIndex, PlayPhase}, component::*};
 use structures::component::ComponentStructure;
 use wasm_bindgen::{prelude::*, throw_str};
 use solana_client_wasm::WasmClient;
-use web_sys::console;
 
 use crate::{component_index::ComponentIndex, blueprint::BlueprintIndex, coreds::{get_registry_instance, get_key_from_id}, json_wrappers::*};
 use core_ds::account::Entity;

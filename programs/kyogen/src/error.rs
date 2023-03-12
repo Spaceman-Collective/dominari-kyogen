@@ -4,27 +4,54 @@ use anchor_lang::prelude::*;
 
 #[error_code]
 pub enum KyogenError {
-    #[msg("Player count exceeded")]
+    #[msg("")]
     PlayerCountExceeded,
 
-    #[msg("String too long")]
+    #[msg("")]
     StringTooLong,
 
-    #[msg("Wrong pack passed in!")]
+    #[msg("")]
     WrongPack,
 
-    #[msg("Wrong tile passed in!")]
+    #[msg("")]
     WrongTile,
 
-    #[msg("Wrong unit!")]
+    #[msg("")]
+    TileOccupied,
+
+    #[msg("")]
+    TileIsNotEmpty,
+
+    #[msg("")]
+    NoOccupantOnTile,
+
+    #[msg("")]
+    PlayerDoesntOwnUnit,
+
+    #[msg("")]
+    AttackingSelfOwnedUnit,
+
+    #[msg("")]
+    TileIsNotSpawnable,
+
+    #[msg("")]
+    TileAlreadyClaimed,
+
+    #[msg("")]
+    TileOutOfRange,
+
+    #[msg("")]
     WrongUnit,
 
-    #[msg("Wrong player!")]
+    #[msg("")]
     WrongPlayer,
 
-    #[msg("Game paused!")]
+    #[msg("")]
     GamePaused,
 
-    #[msg("Unit recovering")]
+    #[msg("")]
     UnitRecovering,
+
+    #[msg("")]
+    UnitNotActive,
 }
