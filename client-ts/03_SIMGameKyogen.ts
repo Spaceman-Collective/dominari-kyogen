@@ -66,7 +66,7 @@ simulate();
 async function simulate(){
     console.log("Instance: ", instance.toString());
     console.log("Waiting 5s to get airdrop confirmation.")
-    await new Promise(resolve => setTimeout(resolve, 5000)); // 3 sec
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
 
     // Load Blueprint into state
     let unit_names = [];
@@ -77,8 +77,9 @@ async function simulate(){
 
     // Print Map
     await gamestate.load_state();
-    let map = gamestate.get_map();
-    console.log(map);
+    console.log(gamestate.debug());
+    console.log(gamestate.get_map());
+    console.log("Play Phase: ", gamestate.get_play_phase());
 
     // Create a couple players
     await createPlayers();
@@ -93,7 +94,12 @@ async function simulate(){
     await unpause();
 
     // Spawn Units
+    await spawnUnit(p1kyogen, PLAYER1, 0, 0, "Ancient Samurai");
+    await gamestate.load_state();
 
+    // Print Map
+    console.log(gamestate.get_map());
+    
 }
 
 async function createPlayers() {
@@ -152,7 +158,9 @@ async function unpause() {
     const tx = new anchor.web3.VersionedTransaction(msg);
     tx.sign([ADMIN_KEY]);
     const sig = await CONNECTION.sendTransaction(tx);
-    await CONNECTION.confirmTransaction(sig);    
+    await CONNECTION.confirmTransaction(sig);
+    await gamestate.load_state();
+    console.log("Play Phase: ", gamestate.get_play_phase())    
 }
 
 function getPlayerHand(player: anchor.web3.Keypair) {
@@ -163,4 +171,26 @@ function getPlayerHand(player: anchor.web3.Keypair) {
     });
 }
 
-async function spawnUnit(){}
+async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:number, y:number, unitName:string){
+    let ix = ixWasmToJs(
+        pkyogen.spawn_unit(
+            instance,
+            randomU64(),
+            BigInt(gamestate.get_tile_id(x, y)),
+            BigInt(gamestate.get_player_by_key(player.publicKey.toString()).id),
+            gamestate.get_blueprint_key(unitName)
+        )
+    ); 
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: player.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([player]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);   
+}

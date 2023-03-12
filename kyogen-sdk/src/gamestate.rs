@@ -1,9 +1,10 @@
 use std::str::FromStr;
 use anchor_lang::prelude::*;
-use kyogen::{account::InstanceIndex as KyogenIndex, component::*};
+use kyogen::{account::{InstanceIndex as KyogenIndex, PlayPhase}, component::*};
 use structures::component::ComponentStructure;
 use wasm_bindgen::{prelude::*, throw_str};
 use solana_client_wasm::WasmClient;
+use web_sys::console;
 
 use crate::{component_index::ComponentIndex, blueprint::BlueprintIndex, coreds::{get_registry_instance, get_key_from_id}, json_wrappers::*};
 use core_ds::account::Entity;
@@ -62,6 +63,24 @@ impl GameState {
 
     pub fn get_blueprint_name(&self, pubkey:String) -> String {
         self.blueprint_index.get_blueprint_name(pubkey)
+    }
+
+    pub fn get_blueprint_key(&self, name:String) -> String {
+        self.blueprint_index.get_blueprint_key(name)
+    }
+    
+    pub fn get_play_phase(&self) -> String  {
+        match self.kyogen_index.as_ref().unwrap().play_phase {
+            PlayPhase::Lobby => return "Lobby".to_string(),
+            PlayPhase::Play => return "Play".to_string(),
+            PlayPhase::Paused => return "Paused".to_string(),
+            PlayPhase::Finished => return "Finished".to_string(),
+        }
+    }
+
+    pub fn debug(&self) {
+        let print_str = format!("Unit Index: {:?}", self.kyogen_index.as_ref().unwrap().units);
+        console::log_1(&print_str.into());
     }
 
     pub async fn update_kyogen_index(&mut self) {
@@ -220,6 +239,17 @@ impl GameState {
 
         serde_wasm_bindgen::to_value(&players).unwrap()
     }
+
+    pub fn get_player_by_key(&self, player_key:String) -> JsValue {
+        for player_id in self.kyogen_index.as_ref().unwrap().players.iter() {
+            let player = self.get_player_info(*player_id);
+            if player.owner.eq(&player_key) {
+                return serde_wasm_bindgen::to_value(&player).unwrap();
+            }
+        };
+
+        return serde_wasm_bindgen::to_value(&{}).unwrap();
+    }
 }
 
 // Non WASM Functions
@@ -245,7 +275,7 @@ impl GameState {
     }
 
     pub fn get_troop_info(&self, id:u64) -> TroopJSON {
-        let metadata = self.get_metdata(&id).unwrap();
+        let metadata = self.get_metadata(&id).unwrap();
         let owner = self.get_owner(&id).unwrap();
         let last_used = self.get_last_used(&id).unwrap();
         let range = self.get_range(&id).unwrap();
@@ -295,7 +325,7 @@ impl GameState {
 impl GameState {
 
     /*** Kyogen Component Getters ***/
-    pub fn get_metdata(&self, id:&u64) -> Option<ComponentMetadata> {
+    pub fn get_metadata(&self, id:&u64) -> Option<ComponentMetadata> {
         let serialized_components = &self.entities.get(&id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().metadata.key());
         if sc.is_none() { return None };

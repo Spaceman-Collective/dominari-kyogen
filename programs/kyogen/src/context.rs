@@ -143,6 +143,7 @@ pub struct ChangeGameState<'info> {
     )]
     pub config: Box<Account<'info, Config>>,
 
+    #[account(mut)]
     pub instance_index: Box<Account<'info, InstanceIndex>>, 
 
     // Used to figure out what instance for event
@@ -324,6 +325,12 @@ pub struct SpawnUnit <'info> {
 
     // Kyogen
     pub unit_blueprint: Box<Account<'info, Blueprint>>,
+    #[account(
+        mut,
+        realloc = instance_index.to_account_info().data_len() + ENTITY_ID_SIZE,
+        realloc::payer = payer,
+        realloc::zero = false,
+    )]
     pub instance_index: Box<Account<'info, InstanceIndex>>,
     #[account(
         // Anyone can initialize themselves
