@@ -91,40 +91,30 @@ async function simulate(){
     await gamestate.load_state();
 
     // Print Map
-    console.log(gamestate.get_map());
     console.log("Ancient Troop: ");
-    printTroopAtTile(0,0);
+    await printTroopAtTile(0,0);
     console.log("Wilding Troop: ");
-    printTroopAtTile(7,0);
+    await printTroopAtTile(7,0);
     
     // Move units next to each other
-    Promise.all([
-        moveTroop(p1kyogen, PLAYER1, 0, 0, 1, 0),
-        moveTroop(p2kyogen, PLAYER2, 7, 0, 6, 0),    
-    ]).then(() => {
-        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
-    })
+    await moveTroop(p1kyogen, PLAYER1, 0, 0, 1, 0), 
+    await moveTroop(p2kyogen, PLAYER2, 7, 0, 6, 0),    
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
 
-    Promise.all([
-        moveTroop(p1kyogen, PLAYER1, 1, 0, 2, 0),
-        moveTroop(p2kyogen, PLAYER2, 6, 0, 5, 0),    
-    ]).then(() => {
-        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
-    })
+    await moveTroop(p1kyogen, PLAYER1, 1, 0, 2, 0),
+    await moveTroop(p2kyogen, PLAYER2, 6, 0, 5, 0),    
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
 
-    Promise.all([
-        moveTroop(p1kyogen, PLAYER1, 2, 0, 3, 0),
-        moveTroop(p2kyogen, PLAYER2, 5, 0, 4, 0),    
-    ]).then(() => {
-        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
-    });
+    await moveTroop(p1kyogen, PLAYER1, 2, 0, 3, 0),
+    await moveTroop(p2kyogen, PLAYER2, 5, 0, 4, 0),    
+    await new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
 
     // Print Map
     console.log(gamestate.get_map());
     console.log("Ancient Troop: ");
-    printTroopAtTile(3,0);
+    await printTroopAtTile(3,0);
     console.log("Wilding Troop: ");
-    printTroopAtTile(4,0)
+    await printTroopAtTile(4,0)
     
     // Attack Wilding Troop
     await attackTile(p1kyogen, PLAYER1, 3, 0, 4, 0);
@@ -132,9 +122,9 @@ async function simulate(){
 
     // Print attack Results:
     console.log("Ancient Troop: ");
-    printTroopAtTile(3,0);
+    await printTroopAtTile(3,0);
     console.log("Wilding Troop: ");
-    printTroopAtTile(4,0);
+    await printTroopAtTile(4,0);
 }
 
 async function createPlayers() {
@@ -221,6 +211,7 @@ async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:num
         payerKey: player.publicKey,
         recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
         instructions: [
+            anchor.web3.ComputeBudgetProgram.setComputeUnitLimit({units: 400000}),
             ix
         ]
     }).compileToLegacyMessage();
@@ -233,7 +224,7 @@ async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:num
 async function printTroopAtTile(x:number, y:number) {
     await gamestate.load_state();
     let map = gamestate.get_map();
-    let troop = map.tiles.find((tile) => tile.x == x && tile.y == y).troop;
+    let troop = map.tiles.find((tile:any) => tile.x == x && tile.y == y).troop;
     console.log(JSON.stringify(troop, null, 2));
 }
 
@@ -244,7 +235,8 @@ async function moveTroop(
     to_x: number, to_y: number, 
 ){
     await gamestate.load_state();
-    let from = gamestate.get_tile_json(BigInt(gamestate.get_tile_id(from_x, from_y)));
+    let from_id = gamestate.get_tile_id(from_x, from_y);
+    let from = gamestate.get_tile_json(BigInt(from_id));
     let unit = BigInt(from.troop.id);
     let to = BigInt(gamestate.get_tile_id(to_x, to_y));
 
