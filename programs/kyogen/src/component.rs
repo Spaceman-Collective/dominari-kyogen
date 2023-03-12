@@ -130,11 +130,12 @@ impl MaxSize for ComponentRange {
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]
 pub struct ComponentHealth{
     pub health: u64,
+    pub max_health: u64,
 }
 
 impl MaxSize for ComponentHealth {
     fn get_max_size() -> u64 {
-        return 8
+        return 8 + 8;
     }
 }
 

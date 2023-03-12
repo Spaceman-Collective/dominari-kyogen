@@ -9,6 +9,7 @@ range:
   attack_range: 1
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 3
   max_damage: 12
@@ -30,6 +31,7 @@ range:
   attack_range: 1
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 3
   max_damage: 12
@@ -51,6 +53,7 @@ range:
   attack_range: 1
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 4
   max_damage: 14
@@ -72,6 +75,7 @@ range:
   attack_range: 1
 health:
   health: 12
+  max_health: 12
 damage:
   min_damage: 3
   max_damage: 12
@@ -93,6 +97,7 @@ range:
   attack_range: 1
 health:
   health: 14
+  max_health: 14
 damage:
   min_damage: 1
   max_damage: 10
@@ -114,6 +119,7 @@ range:
   attack_range: 1
 health:
   health: 14
+  max_health: 14
 damage:
   min_damage: 2
   max_damage: 12
@@ -135,6 +141,7 @@ range:
   attack_range: 1
 health:
   health: 14
+  max_health: 14
 damage:
   min_damage: 1
   max_damage: 10
@@ -156,6 +163,7 @@ range:
   attack_range: 1
 health:
   health: 16
+  max_health: 16
 damage:
   min_damage: 1
   max_damage: 10
@@ -177,6 +185,7 @@ range:
   attack_range: 2
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 1
   max_damage: 10
@@ -198,6 +207,7 @@ range:
   attack_range: 2
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 1
   max_damage: 10
@@ -219,6 +229,7 @@ range:
   attack_range: 2
 health:
   health: 10
+  max_health: 10
 damage:
   min_damage: 2
   max_damage: 12
@@ -240,6 +251,7 @@ range:
   attack_range: 2
 health:
   health: 12
+  max_health: 12
 damage:
   min_damage: 1
   max_damage: 10

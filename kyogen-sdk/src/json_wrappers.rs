@@ -25,6 +25,7 @@ pub struct TroopJSON {
     pub attack_range: u8,
     // Health
     pub health: String, //u64
+    pub max_health: String, //u64
     // Damage
     pub min_damage: String, //u64
     pub max_damage: String, //u64
@@ -52,6 +53,7 @@ pub struct PlayerJSON {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TileJSON {
+    pub id: String,
     pub x: u8, 
     pub y: u8,
     pub spawnable: bool,

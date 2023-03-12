@@ -4,9 +4,8 @@ dotenv.config({ path: `.env.local`, override: true });
 import * as anchor from '@coral-xyz/anchor';
 import {readFileSync} from 'fs';
 import * as sdk from '../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
-import { ixWasmToJs, ixPack, randomU64 } from './util';
+import { ixWasmToJs, randomU64 } from './util';
 import YAML from 'yaml';
-import * as spl from '@solana/spl-token';
 
 const programs = {
     COREDS: new anchor.web3.PublicKey(process.env.COREDS_ID),
@@ -55,13 +54,6 @@ let gamestate = new sdk.GameState(
 // Needed to configure blueprints
 let units = YAML.parseAllDocuments(readFileSync('./assets/units.yml', {encoding: "utf-8"}));
 
-// Print state of map and players
-// Create a couple players
-// Start/Unpause the game
-// Check hand
-// Spawn units
-// Attack units
-
 simulate();
 // Basic Kyogen Simulation
 async function simulate(){
@@ -78,7 +70,6 @@ async function simulate(){
 
     // Print Map
     await gamestate.load_state();
-    console.log(gamestate.debug());
     console.log(gamestate.get_map());
     console.log("Play Phase: ", gamestate.get_play_phase());
 
@@ -96,11 +87,54 @@ async function simulate(){
 
     // Spawn Units
     await spawnUnit(p1kyogen, PLAYER1, 0, 0, "Ancient Samurai");
+    await spawnUnit(p2kyogen, PLAYER2, 7, 0, 'Wilding Samurai');
     await gamestate.load_state();
 
     // Print Map
     console.log(gamestate.get_map());
+    console.log("Ancient Troop: ");
+    printTroopAtTile(0,0);
+    console.log("Wilding Troop: ");
+    printTroopAtTile(7,0);
     
+    // Move units next to each other
+    Promise.all([
+        moveTroop(p1kyogen, PLAYER1, 0, 0, 1, 0),
+        moveTroop(p2kyogen, PLAYER2, 7, 0, 6, 0),    
+    ]).then(() => {
+        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
+    })
+
+    Promise.all([
+        moveTroop(p1kyogen, PLAYER1, 1, 0, 2, 0),
+        moveTroop(p2kyogen, PLAYER2, 6, 0, 5, 0),    
+    ]).then(() => {
+        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
+    })
+
+    Promise.all([
+        moveTroop(p1kyogen, PLAYER1, 2, 0, 3, 0),
+        moveTroop(p2kyogen, PLAYER2, 5, 0, 4, 0),    
+    ]).then(() => {
+        new Promise(resolve => setTimeout(resolve, 5000)); // 5 sec
+    });
+
+    // Print Map
+    console.log(gamestate.get_map());
+    console.log("Ancient Troop: ");
+    printTroopAtTile(3,0);
+    console.log("Wilding Troop: ");
+    printTroopAtTile(4,0)
+    
+    // Attack Wilding Troop
+    await attackTile(p1kyogen, PLAYER1, 3, 0, 4, 0);
+    await gamestate.load_state();
+
+    // Print attack Results:
+    console.log("Ancient Troop: ");
+    printTroopAtTile(3,0);
+    console.log("Wilding Troop: ");
+    printTroopAtTile(4,0);
 }
 
 async function createPlayers() {
@@ -178,7 +212,7 @@ async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:num
             instance,
             randomU64(),
             BigInt(gamestate.get_tile_id(x, y)),
-            BigInt(gamestate.get_player_by_key(player.publicKey.toString()).id),
+            BigInt(gamestate.get_playerjson_by_key(player.publicKey.toString()).id),
             gamestate.get_blueprint_key(unitName)
         )
     ); 
@@ -194,4 +228,81 @@ async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:num
     tx.sign([player]);
     const sig = await CONNECTION.sendTransaction(tx);
     await CONNECTION.confirmTransaction(sig);   
+}
+
+async function printTroopAtTile(x:number, y:number) {
+    await gamestate.load_state();
+    let map = gamestate.get_map();
+    let troop = map.tiles.find((tile) => tile.x == x && tile.y == y).troop;
+    console.log(JSON.stringify(troop, null, 2));
+}
+
+async function moveTroop(
+    pkyogen: sdk.Kyogen, 
+    player: anchor.web3.Keypair, 
+    from_x: number, from_y: number,
+    to_x: number, to_y: number, 
+){
+    await gamestate.load_state();
+    let from = gamestate.get_tile_json(BigInt(gamestate.get_tile_id(from_x, from_y)));
+    let unit = BigInt(from.troop.id);
+    let to = BigInt(gamestate.get_tile_id(to_x, to_y));
+
+    let ix = ixWasmToJs(
+        pkyogen.move_unit(
+            instance,
+            unit,
+            BigInt(gamestate.get_playerjson_by_key(player.publicKey.toString()).id),
+            from.id,
+            to
+        )
+    );
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: player.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([player]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);   
+}
+
+async function attackTile(
+    pkyogen: sdk.Kyogen, 
+    player: anchor.web3.Keypair, 
+    from_x: number, from_y: number,
+    to_x: number, to_y: number,   
+){
+    await gamestate.load_state();
+    let map = gamestate.get_map();
+    let attacker = map.tiles.find((tile:any) => tile.x == from_x && tile.y == from_y).troop.id;
+    let defending_tile = map.tiles.find((tile:any) => tile.x == to_x && tile.y == to_y);
+    let defender = defending_tile.troop.id;
+    
+
+    let ix = ixWasmToJs(
+        pkyogen.attack_unit(
+            instance,
+            BigInt(attacker),
+            BigInt(defender),
+            BigInt(defending_tile.id)
+        )
+    );
+
+    const msg = new anchor.web3.TransactionMessage({
+        payerKey: player.publicKey,
+        recentBlockhash: (await CONNECTION.getLatestBlockhash()).blockhash,
+        instructions: [
+            ix
+        ]
+    }).compileToLegacyMessage();
+    const tx = new anchor.web3.VersionedTransaction(msg);
+    tx.sign([player]);
+    const sig = await CONNECTION.sendTransaction(tx);
+    await CONNECTION.confirmTransaction(sig);   
+
 }

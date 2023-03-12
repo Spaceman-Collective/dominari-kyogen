@@ -78,11 +78,6 @@ impl GameState {
         }
     }
 
-    pub fn debug(&self) {
-        let print_str = format!("Unit Index: {:?}", self.kyogen_index.as_ref().unwrap().units);
-        console::log_1(&print_str.into());
-    }
-
     pub async fn update_kyogen_index(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
 
@@ -240,7 +235,7 @@ impl GameState {
         serde_wasm_bindgen::to_value(&players).unwrap()
     }
 
-    pub fn get_player_by_key(&self, player_key:String) -> JsValue {
+    pub fn get_playerjson_by_key(&self, player_key:String) -> JsValue {
         for player_id in self.kyogen_index.as_ref().unwrap().players.iter() {
             let player = self.get_player_info(*player_id);
             if player.owner.eq(&player_key) {
@@ -260,6 +255,7 @@ impl GameState {
         let occupant = self.get_occupant(&id).unwrap();
 
         let mut tile = TileJSON {
+            id: id.to_string(),
             x: location.x,
             y: location.y,
             spawnable: spawn.spawnable,
@@ -294,6 +290,7 @@ impl GameState {
             movement: range.movement,
             attack_range: range.attack_range,
             health: health.health.to_string(),
+            max_health: health.max_health.to_string(),
             min_damage: damage.min_damage.to_string(),
             max_damage: damage.max_damage.to_string(),
             bonus_samurai: damage.bonus_samurai.to_string(),
