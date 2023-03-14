@@ -48,6 +48,7 @@ let gamestate = new sdk.GameState(
     programs.KYOGEN.toString(),
     programs.REGISTRY.toString(),
     programs.COREDS.toString(),
+    programs.STRUCTURES.toString(),
     instance
 );
 

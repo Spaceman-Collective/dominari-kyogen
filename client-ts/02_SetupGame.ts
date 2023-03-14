@@ -214,6 +214,7 @@ async function init_structures(instance:bigint) {
         programs.KYOGEN.toString(),
         programs.REGISTRY.toString(),
         programs.COREDS.toString(),
+        programs.STRUCTURES.toString(),
         instance,
     );
     await gamestate.load_state();
