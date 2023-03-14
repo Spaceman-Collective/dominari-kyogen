@@ -158,7 +158,12 @@ pub struct UseMeteor<'info> {
     // Structures
     #[account(
         mut, // modifies high score if applicable
-        constraint = structures_index.instance == kyogen_index.instance
+        constraint = structures_index.instance == kyogen_index.instance,
+        seeds=[
+            SEEDS_PREFIXINDEX,
+            registry_instance.key().as_ref(),
+        ],
+        bump,
     )]
     pub structures_index: Box<Account<'info, StructureIndex>>,
     #[account(

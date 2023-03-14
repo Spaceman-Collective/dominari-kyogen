@@ -230,10 +230,18 @@ pub mod structures {
                     to: ctx.accounts.user_ata.to_account_info(),
                     authority: ctx.accounts.structures_index.to_account_info()
                 };
+
+                let registry_key = ctx.accounts.registry_instance.key();
+                let structure_index_signer_seeds:&[&[u8]] = &[
+                    SEEDS_PREFIXINDEX,
+                    registry_key.as_ref(),
+                    &[*ctx.bumps.get("structures_index").unwrap()]
+                ];
         
-                transfer(CpiContext::new(
+                transfer(CpiContext::new_with_signer(
                     ctx.accounts.token_program.to_account_info(), 
                     transfer_accounts,
+                    &[structure_index_signer_seeds]
                 ), solarite_per_use)?;
 
                 // Grant Score to User
