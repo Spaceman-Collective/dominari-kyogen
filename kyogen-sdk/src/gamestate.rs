@@ -375,6 +375,11 @@ impl GameState {
         serde_wasm_bindgen::to_value(&players).unwrap()
     }
 
+    pub fn get_player_json(&self, player_id:u64) -> JsValue {
+        let player = self.get_player_info(player_id);
+        return serde_wasm_bindgen::to_value(&player).unwrap();
+    }
+
     pub fn get_playerjson_by_key(&self, player_key:String) -> JsValue {
         for player_id in self.kyogen_index.as_ref().unwrap().players.iter() {
             let player = self.get_player_info(*player_id);
