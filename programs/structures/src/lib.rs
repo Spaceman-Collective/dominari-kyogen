@@ -137,11 +137,11 @@ pub mod structures {
         if matches!(structure_type.structure, StructureType::Portal { .. }) {
             ctx.accounts.structure_index.portal.push(entity_id);
         } else if matches!(structure_type.structure, StructureType::Healer { .. }) {
-            ctx.accounts.structure_index.portal.push(entity_id);
+            ctx.accounts.structure_index.healer.push(entity_id);
         } else if matches!(structure_type.structure, StructureType::Lootable { .. }) {
-            ctx.accounts.structure_index.portal.push(entity_id);
+            ctx.accounts.structure_index.lootable.push(entity_id);
         } else if matches!(structure_type.structure, StructureType::Meteor { .. }) {
-            ctx.accounts.structure_index.portal.push(entity_id);
+            ctx.accounts.structure_index.meteor.push(entity_id);
         }
 
         Ok(())
