@@ -36,7 +36,7 @@ pub mod structures {
     }
 
     // Init Index & Register with Registry
-    pub fn init_index(ctx:Context<InitStructureIndex>, _instance:u64) -> Result<()> {
+    pub fn init_index(ctx:Context<InitStructureIndex>, instance:u64) -> Result<()> {
         // CTX Creates the Structure Index
         // Append the Registry Index to include this AB for the given instance
         
@@ -52,7 +52,7 @@ pub mod structures {
         );
 
         registry::cpi::append_registry_index(append_ctx)?;
-
+        ctx.accounts.structures_index.instance = instance;
         Ok(())
     }
 
