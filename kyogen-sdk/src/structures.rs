@@ -276,9 +276,15 @@ impl Structures {
 
     pub fn get_structures_index(&self, instance:u64) -> String {
         // Structures
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
         let structure_index = Pubkey::find_program_address(&[
             SEEDS_PREFIXINDEX,
-            instance.to_be_bytes().as_ref(),
+            registry_instance.key().as_ref(),
         ], &self.structures_id).0;
 
         structure_index.to_string()
