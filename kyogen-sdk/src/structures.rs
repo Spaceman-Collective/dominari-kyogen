@@ -116,7 +116,7 @@ impl Structures {
                 game_token
             }.to_account_metas(None),
             data: structures::instruction::InitIndex {
-                _instance: instance,
+                instance,
             }.data()
         };
 
