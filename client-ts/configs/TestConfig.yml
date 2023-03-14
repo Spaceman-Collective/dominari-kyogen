@@ -1,7 +1,7 @@
 max_players: 100
 game_token: "replace w/ mint"
 spawn_claim_multiplier: 1.1
-max_score: 10000
+max_score: 50000
 
 mapmeta: 
   max_x: 8

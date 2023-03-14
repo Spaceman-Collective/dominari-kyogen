@@ -1,10 +1,12 @@
 use anchor_lang::prelude::*;
 
 use kyogen::component::*;
+use kyogen::constant::Clans;
 use core_ds::state::SerializedComponent;
 use std::collections::BTreeMap;
 use core_ds::account::MaxSize;
 use anchor_spl::token::{Transfer, transfer};
+use anchor_lang::solana_program::hash::*;
 
 pub mod context;
 pub mod account;
@@ -150,12 +152,18 @@ pub mod structures {
     // Use Meteor    
         // Transfer Solarite from SI to User
     pub fn use_meteor(ctx:Context<UseMeteor>) -> Result<()> {
+        // Check the game isnt' paused
+        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
+
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
         
         let tile = &ctx.accounts.tile;
         let unit = &ctx.accounts.unit;
         let meteor = &ctx.accounts.meteor;
+        let player = &ctx.accounts.player;
 
         // Make sure there is a unit on tile & it's the same id as unit.id
         let occupant_sc = tile.components.get(&kyogen_ref.occupant).unwrap();
@@ -227,6 +235,34 @@ pub mod structures {
                     ctx.accounts.token_program.to_account_info(), 
                     transfer_accounts,
                 ), solarite_per_use)?;
+
+                // Grant Score to User
+                let player_stats_sc = player.components.get(&kyogen_ref.player_stats).unwrap();
+                let mut player_stats = ComponentPlayerStats::try_from_slice(&player_stats_sc.data.as_slice()).unwrap();
+                player_stats.score += solarite_per_use;
+
+                // Modify Player Stats 
+                let modify_player_ctx = CpiContext::new_with_signer(
+                    ctx.accounts.registry_program.to_account_info(),            
+                    registry::cpi::accounts::ModifyComponent {
+                        entity: ctx.accounts.player.to_account_info(),
+                        registry_config: ctx.accounts.registry_config.to_account_info(),
+                        action_bundle: ctx.accounts.structures_config.to_account_info(),
+                        action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                        core_ds: ctx.accounts.coreds.to_account_info(),                
+                    }, 
+                    signer_seeds
+                );
+                registry::cpi::req_modify_component(modify_player_ctx, vec![
+                    (kyogen_ref.player_stats, player_stats.try_to_vec().unwrap()), // Last Used
+                ])?;
+        
+                // Set high score if needed
+                let current_high_score = &ctx.accounts.structures_index.high_score; 
+                if player_stats.score > current_high_score.1 {
+                    ctx.accounts.structures_index.high_score = (player.entity_id, player_stats.score);
+                }
+
             },
             _ => {
                 return err!(StructureError::WrongStructure)
@@ -244,6 +280,11 @@ pub mod structures {
      
     // Use Portal
     pub fn use_portal(ctx:Context<UsePortal>) -> Result<()> {
+        // Check the game isnt' paused
+        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
+        
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
 
@@ -421,13 +462,182 @@ pub mod structures {
             (kyogen_ref.last_used, unit_last_used.try_to_vec().unwrap()), // Last Used
         ])?;   
 
+        emit!(PortalUsed{
+            from: from.entity_id,
+            to: to.entity_id,
+            unit: unit.entity_id
+        });
+
         Ok(())
     }
 
+    // Use Lootable
+    pub fn use_lootable(ctx:Context<UseLootable>) -> Result<()> {
+        // Check the game isnt' paused
+        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
+
+        // References
+        let kyogen_ref = &ctx.accounts.kyogen_config.components;
+        let structures_ref = &ctx.accounts.structures_config.components;
+
+        let tile = &ctx.accounts.tile;
+        let unit = &ctx.accounts.unit;
+        let lootable = &ctx.accounts.lootable;
+        let pack = &ctx.accounts.pack;
+        let player = &ctx.accounts.player;
+
+        // Check if Tile.location == Structre.location
+        let tile_location_sc = tile.components.get(&kyogen_ref.location).unwrap();
+        let tile_location = ComponentLocation::try_from_slice(&tile_location_sc.data.as_slice()).unwrap();
+        let lootable_location_sc = lootable.components.get(&kyogen_ref.location).unwrap();
+        let lootable_location = ComponentLocation::try_from_slice(&lootable_location_sc.data.as_slice()).unwrap();
+
+        if tile_location.x != lootable_location.x || 
+           tile_location.y != lootable_location.y {
+            return err!(StructureError::WrongStructure)
+        }
+
+        // Check if Tile.occupant == unit.id
+        let tile_occupant_sc = tile.components.get(&kyogen_ref.location).unwrap();
+        let tile_occupant = ComponentOccupant::try_from_slice(&tile_occupant_sc.data.as_slice()).unwrap();
+        if tile_occupant.occupant_id.unwrap() != unit.entity_id {
+            return err!(StructureError::InvalidUnit)
+        }
+
+        // Unit.owner == payer
+        let unit_owner_sc = unit.components.get(&kyogen_ref.owner).unwrap();
+        let unit_owner = ComponentOwner::try_from_slice(&unit_owner_sc.data.as_slice()).unwrap();
+        if unit_owner.owner.unwrap().key() != ctx.accounts.payer.key() {
+            return err!(StructureError::InvalidUnit)
+        }
+
+        // Player owner is payer
+        let player_stats_sc = player.components.get(&kyogen_ref.player_stats).unwrap();
+        let mut player_stats = ComponentPlayerStats::try_from_slice(&player_stats_sc.data.as_slice()).unwrap();
+        if player_stats.key.key() != ctx.accounts.payer.key() {
+            return err!(StructureError::InvalidOwner)
+        }
+
+        // Lootable.last_used isn't violated
+        let clock = Clock::get().unwrap();
+        let lootable_last_used_c = lootable.components.get(&kyogen_ref.last_used).unwrap();
+        let mut lootable_last_used = ComponentLastUsed::try_from_slice(&lootable_last_used_c.data.as_slice()).unwrap();
+        if lootable_last_used.last_used != 0 && (lootable_last_used.last_used + lootable_last_used.recovery) >= clock.slot {
+            return err!(StructureError::StructureInCooldown)
+        }
+
+        // Unit.last_used isn't violated
+        let unit_last_used_c = unit.components.get(&kyogen_ref.last_used).unwrap();
+        let mut unit_last_used = ComponentLastUsed::try_from_slice(&unit_last_used_c.data.as_slice()).unwrap();
+        if unit_last_used.last_used != 0 && (unit_last_used.last_used + unit_last_used.recovery) >= clock.slot {
+            return err!(StructureError::StructureInCooldown)
+        }
+
+        // Match Lootable pack with Player clan, get random number
+        let lootable_structure_sc = lootable.components.get(&structures_ref.structure).unwrap();
+        let lootable_structure = ComponentStructure::try_from_slice(&lootable_structure_sc.data.as_slice()).unwrap();
+
+        let pack_key;
+        match lootable_structure.structure {
+            StructureType::Lootable { ancients_pack, wildings_pack, creepers_pack, synths_pack } => {
+                match player_stats.clan {
+                    Clans::Ancients => {
+                        pack_key = ancients_pack;
+                    }
+                    Clans::Wildings => {
+                        pack_key = wildings_pack;
+                    }
+                    Clans::Creepers => {
+                        pack_key = creepers_pack;
+                    }
+                    Clans::Synths => {
+                        pack_key = synths_pack;
+                    }
+                }
+            }
+            _=> {
+                return err!(StructureError::WrongStructure)
+            }
+        }
+        if pack_key.key() != pack.key() {
+            return err!(StructureError::InvalidPack)
+        }
+        
+        let random_card_idx = get_random_u64(pack.blueprints.len() as u64 - 1 );
+        // TODO Add error handling for exceeding max cards
+        player_stats.cards.push(pack.blueprints.get(random_card_idx as usize).unwrap().clone());
+
+        // Update Structure Last Used
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_STRUCTURESSIGNER,
+            &[*ctx.bumps.get("structures_config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+
+        lootable_last_used.last_used = clock.slot;
+        let modify_structure_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.lootable.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_structure_ctx, vec![
+            (kyogen_ref.last_used, lootable_last_used.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        // Update Unit Last Used
+        unit_last_used.last_used = clock.slot;
+        let modify_unit_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.unit.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_unit_ctx, vec![
+            (kyogen_ref.last_used, lootable_last_used.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        // Update Player Hand
+        let modify_player_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.player.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_player_ctx, vec![
+            (kyogen_ref.player_stats, player_stats.try_to_vec().unwrap()),
+        ])?;
+        
+        Ok(())
+    }
 
     // Use Healer
-    // Use Lootable
 
     // Claim Victory
-        // Check that SI ATA == 0 (should be held by users or in KI ATA)
+
+}
+
+pub fn get_random_u64(max: u64) -> u64 {
+    let clock = Clock::get().unwrap();
+    let slice = &hash(&clock.slot.to_be_bytes()).to_bytes()[0..8];
+    let num: u64 = u64::from_be_bytes(slice.try_into().unwrap());
+    let target = num/(u64::MAX/max);
+    return target;
 }

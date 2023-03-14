@@ -796,6 +796,13 @@ impl Kyogen {
             &Pubkey::from_str(&kyogen_id).unwrap()
         ).to_string()
     }
+
+    pub fn get_pack_key(kyogen_id:&str, name:&str) -> String {
+        Pubkey::find_program_address(&[
+            SEEDS_PACK,
+            name.as_bytes().as_ref(),
+        ], &Pubkey::from_str(&kyogen_id).unwrap()).0.to_string()
+    }
 }
 
 // Non WASM Methods

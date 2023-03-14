@@ -30,5 +30,11 @@ pub enum StructureError {
     UnitCooldown,
 
     #[msg("")]
-    PortalChannelMismatch
+    PortalChannelMismatch,
+
+    #[msg("")]
+    GamePaused,
+
+    #[msg("")]
+    InvalidPack
 }

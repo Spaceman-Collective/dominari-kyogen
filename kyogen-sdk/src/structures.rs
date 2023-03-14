@@ -98,7 +98,6 @@ impl Structures {
         let game_token = Pubkey::from_str(game_token_mint).unwrap();
         let structures_index_ata = get_associated_token_address(&structures_index, &game_token);
 
-
         let ix = Instruction {
             program_id: self.structures_id,
             accounts: structures::accounts::InitStructureIndex {
@@ -185,7 +184,7 @@ impl Structures {
     }
 
     // Use Meteor
-    pub fn use_meteor(&self, instance:u64, meteor_id:u64, tile_id: u64, unit_id:u64, game_token_mint:&str) -> JsValue {
+    pub fn use_meteor(&self, instance:u64, meteor_id:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_mint:&str) -> JsValue {
         let payer = self.payer;
         let structures_config = Structures::get_structures_signer(&self.structures_id);
 
@@ -204,8 +203,7 @@ impl Structures {
         let meteor = get_key_from_id(&self.core_id, &registry_instance, meteor_id);
         let tile = get_key_from_id(&self.core_id, &registry_instance, tile_id);
         let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
-
-
+        let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
 
         // Structures
         let structures_index = Pubkey::find_program_address(&[
@@ -228,7 +226,7 @@ impl Structures {
         let game_token = Pubkey::from_str(&game_token_mint).unwrap();
         let user_ata = get_associated_token_address(&payer, &game_token);
         let structures_ata = get_associated_token_address(&structures_index, &game_token);
-
+    
         let ix = Instruction {
             program_id: self.structures_id,
             accounts: structures::accounts::UseMeteor {
@@ -251,10 +249,11 @@ impl Structures {
                 structures_registration,
                 meteor,
                 unit,
+                player
             }.to_account_metas(None),
             data: structures::instruction::UseMeteor {}.data()
         };
-
+        
         to_value(&ix).unwrap()   
     }
 
@@ -345,6 +344,92 @@ impl Structures {
     }
 
     // Use Lootable
+    pub fn use_lootable(
+        &self, 
+        instance:u64,
+        game_token_mint:&str,
+        tile_id:u64,
+        unit_id:u64,
+        lootable_id: u64,
+        player_id: u64,
+        pack_key: &str,
+    ) -> JsValue {
+        let payer = self.payer;
+        let structures_config = Structures::get_structures_signer(&self.structures_id);
+
+        // Registry
+        let registry_program = self.registry_id;
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+
+        // Core DS
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+        let coreds = self.core_id;
+
+        let tile = get_key_from_id(&self.core_id, &registry_instance, tile_id);
+        let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
+        let lootable = get_key_from_id(&self.core_id, &registry_instance, lootable_id);
+        let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
+
+
+        // Structures
+        let structures_index = Pubkey::find_program_address(&[
+            SEEDS_PREFIXINDEX,
+            instance.to_be_bytes().as_ref(),
+        ], &self.structures_id).0;
+        let structures_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            structures_config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        // Kyogen
+        let kyogen_config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let kyogen_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // SPL
+        let game_token = Pubkey::from_str(&game_token_mint).unwrap();
+        let user_ata = get_associated_token_address(&payer, &game_token);
+        let kyogen_ata = get_associated_token_address(&kyogen_index, &game_token);
+
+
+        let ix = Instruction {
+            program_id: self.structures_id,
+            accounts: structures::accounts::UseLootable {
+                payer, 
+                system_program,
+                structures_config,
+                kyogen_config,
+                registry_config,
+                registry_instance,
+                registry_program,
+                coreds,
+                game_token,
+                user_ata,
+                kyogen_ata,
+                token_program,
+                associated_token_program,
+                structures_index,
+                kyogen_index,
+                structures_registration,
+                tile,
+                unit,
+                lootable,
+                player,
+                pack: Pubkey::from_str(pack_key).unwrap()
+            }.to_account_metas(None),
+            data: structures::instruction::UseLootable {}.data()
+        };
+
+        to_value(&ix).unwrap()  
+    }
+
+
     // Use Healer
 }
 

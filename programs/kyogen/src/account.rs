@@ -58,7 +58,7 @@ pub struct InstanceIndex {
     pub tiles: Vec<u64>,
     pub units: Vec<u64>,
     pub players: Vec<u64>,
-    pub play_phase: PlayPhase
+    pub play_phase: PlayPhase,
 }
 
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]

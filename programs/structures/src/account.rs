@@ -20,11 +20,12 @@ pub struct StructureIndex {
     pub portal: Vec<u64>,
     pub healer: Vec<u64>,
     pub lootable: Vec<u64>,
-    pub meteor: Vec<u64>
+    pub meteor: Vec<u64>,
+    pub high_score: (u64, u64), // (Player ID, Current High Score)
 }
 
 impl MaxSize for StructureIndex {
     fn get_max_size() -> u64 {
-        return 8+4+4+4+4;
+        return 8+4+4+4+4+8+8+1;
     }
 }
