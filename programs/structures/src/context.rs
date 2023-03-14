@@ -161,6 +161,10 @@ pub struct UseMeteor<'info> {
         constraint = structures_index.instance == kyogen_index.instance
     )]
     pub structures_index: Box<Account<'info, StructureIndex>>,
+    #[account(
+        seeds=[SEEDS_STRUCTURESSIGNER],
+        bump,
+    )]
     pub structures_config: Box<Account<'info, Config>>,
 
     // Kyogen
@@ -217,6 +221,10 @@ pub struct UsePortal<'info> {
         constraint = structures_index.instance == kyogen_index.instance
     )]
     pub structures_index: Box<Account<'info, StructureIndex>>,
+    #[account(
+        seeds=[SEEDS_STRUCTURESSIGNER],
+        bump,
+    )]
     pub structures_config: Box<Account<'info, Config>>,
 
     // Kyogen
@@ -275,6 +283,10 @@ pub struct UseLootable<'info> {
         constraint = structures_index.instance == kyogen_index.instance
     )]
     pub structures_index: Box<Account<'info, StructureIndex>>,
+    #[account(
+        seeds=[SEEDS_STRUCTURESSIGNER],
+        bump,
+    )]
     pub structures_config: Box<Account<'info, Config>>,
 
     // Kyogen
