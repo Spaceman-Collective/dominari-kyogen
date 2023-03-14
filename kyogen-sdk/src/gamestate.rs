@@ -84,6 +84,16 @@ impl GameState {
         }
     }
 
+    pub fn get_game_config(&self) -> JsValue {
+        let config = &self.kyogen_index.as_ref().unwrap().config;
+        serde_wasm_bindgen::to_value(&GameConfigJSON {
+            max_players: config.max_players,
+            game_token: config.game_token.to_string(),
+            spawn_claim_multiplier: config.spawn_claim_multiplier,
+            max_score: config.max_score
+        }).unwrap()
+    }
+
     pub async fn update_index(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
 

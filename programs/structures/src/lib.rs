@@ -241,13 +241,21 @@ pub mod structures {
         Ok(())
     }
 
-    /* 
+     
     // Use Portal
     pub fn use_portal(ctx:Context<UsePortal>) -> Result<()> {
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
 
+        let from = &ctx.accounts.from;
+        let to = &ctx.accounts.to;
+        let unit = &ctx.accounts.unit;
+
         // Make sure from.occupant is not unit.id
+        let from_occupant_sc = from.components.get(&kyogen_ref.occupant).unwrap();
+        let from_occupant = ComponentOccupant::try_from_slice(&from_occupant_sc.data.as_slice()).unwrap();
+        
+
         // Make sure unit.owner == payer
         // Make sure to.occupant is none
         // Make sure from.last_used isn't violated
@@ -258,7 +266,6 @@ pub mod structures {
         // Update unit lastused
         Ok(())
     }
-    */
 
 
     // Use Healer
