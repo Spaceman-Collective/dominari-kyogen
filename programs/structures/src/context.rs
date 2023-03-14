@@ -184,6 +184,7 @@ pub struct UseMeteor<'info> {
     #[account(mut)]
     pub meteor: Box<Account<'info, Entity>>,
     pub tile: Box<Account<'info, Entity>>,
+    #[account(mut)]
     pub unit: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub player: Box<Account<'info, Entity>>,
