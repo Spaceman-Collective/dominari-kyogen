@@ -229,8 +229,6 @@ impl Structures {
         let user_ata = get_associated_token_address(&payer, &game_token);
         let structures_ata = get_associated_token_address(&structures_index, &game_token);
 
-        
-
         let ix = Instruction {
             program_id: self.structures_id,
             accounts: structures::accounts::UseMeteor {
@@ -257,11 +255,97 @@ impl Structures {
             data: structures::instruction::UseMeteor {}.data()
         };
 
-        to_value(&ix).unwrap()    }
+        to_value(&ix).unwrap()   
+    }
+
+    // Use Portal
+    pub fn use_portal(
+        &self, 
+        instance:u64,
+        game_token_mint:&str,
+        from_tile: u64,
+        from_portal: u64,
+        to_tile: u64,
+        to_portal: u64,
+        unit: u64,
+    ) -> JsValue {
+        let payer = self.payer;
+        let structures_config = Structures::get_structures_signer(&self.structures_id);
+
+        // Registry
+        let registry_program = self.registry_id;
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+
+        // Core DS
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+        let coreds = self.core_id;
+
+        let from = get_key_from_id(&self.core_id, &registry_instance, from_tile);
+        let from_portal = get_key_from_id(&self.core_id, &registry_instance, from_portal);
+        let to = get_key_from_id(&self.core_id, &registry_instance, to_tile);
+        let to_portal = get_key_from_id(&self.core_id, &registry_instance, to_portal);
+        let unit = get_key_from_id(&self.core_id, &registry_instance, unit);
+
+        // Structures
+        let structures_index = Pubkey::find_program_address(&[
+            SEEDS_PREFIXINDEX,
+            instance.to_be_bytes().as_ref(),
+        ], &self.structures_id).0;
+        let structures_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            structures_config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        // Kyogen
+        let kyogen_config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let kyogen_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // SPL
+        let game_token = Pubkey::from_str(&game_token_mint).unwrap();
+        let user_ata = get_associated_token_address(&payer, &game_token);
+        let kyogen_ata = get_associated_token_address(&kyogen_index, &game_token);
+
+
+        let ix = Instruction {
+            program_id: self.structures_id,
+            accounts: structures::accounts::UsePortal {
+                payer, 
+                system_program,
+                structures_config,
+                kyogen_config,
+                registry_config,
+                registry_instance,
+                registry_program,
+                coreds,
+                game_token,
+                user_ata,
+                kyogen_ata,
+                token_program,
+                associated_token_program,
+                structures_index,
+                kyogen_index,
+                structures_registration,
+                from,
+                from_portal,
+                to,
+                to_portal,
+                unit,
+            }.to_account_metas(None),
+            data: structures::instruction::UsePortal {}.data()
+        };
+
+        to_value(&ix).unwrap()  
+    }
 
     // Use Lootable
     // Use Healer
-    // Use Portal
 }
 
 

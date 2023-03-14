@@ -231,9 +231,12 @@ pub struct UsePortal<'info> {
 
 
     #[account(mut)]
-    pub from: Box<Account<'info, Entity>>,
+    pub from: Box<Account<'info, Entity>>, 
+    #[account(mut)]
+    pub from_portal: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub to: Box<Account<'info, Entity>>,
+    pub to_portal: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub unit: Box<Account<'info, Entity>>,
 }

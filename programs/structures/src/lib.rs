@@ -218,9 +218,9 @@ pub mod structures {
         match structure_info.structure {
             StructureType::Meteor { solarite_per_use } => {
                 let transfer_accounts = Transfer{
-                    from: ctx.accounts.user_ata.to_account_info(),
-                    to: ctx.accounts.structures_ata.to_account_info(),
-                    authority: ctx.accounts.payer.to_account_info()
+                    from: ctx.accounts.structures_ata.to_account_info(),
+                    to: ctx.accounts.user_ata.to_account_info(),
+                    authority: ctx.accounts.structures_index.to_account_info()
                 };
         
                 transfer(CpiContext::new(
@@ -248,22 +248,179 @@ pub mod structures {
         let structures_ref = &ctx.accounts.structures_config.components;
 
         let from = &ctx.accounts.from;
+        let from_portal = &ctx.accounts.from_portal;
         let to = &ctx.accounts.to;
+        let to_portal = &ctx.accounts.to_portal;
         let unit = &ctx.accounts.unit;
 
-        // Make sure from.occupant is not unit.id
+        // Make sure from.occupant is unit.id
         let from_occupant_sc = from.components.get(&kyogen_ref.occupant).unwrap();
-        let from_occupant = ComponentOccupant::try_from_slice(&from_occupant_sc.data.as_slice()).unwrap();
-        
+        let mut from_occupant = ComponentOccupant::try_from_slice(&from_occupant_sc.data.as_slice()).unwrap();
+        if from_occupant.occupant_id.is_none() || from_occupant.occupant_id.unwrap() != unit.entity_id {
+            return err!(StructureError::InvalidUnit)
+        }
 
         // Make sure unit.owner == payer
+        let unit_owner_sc = unit.components.get(&kyogen_ref.owner).unwrap();
+        let unit_owner = ComponentOwner::try_from_slice(&unit_owner_sc.data.as_slice()).unwrap();
+        if unit_owner.owner.unwrap().key() != ctx.accounts.payer.key() {
+            return err!(StructureError::InvalidUnit)
+        }
+
         // Make sure to.occupant is none
-        // Make sure from.last_used isn't violated
+        let to_occupant_sc = to.components.get(&kyogen_ref.occupant).unwrap();
+        let mut to_occupant = ComponentOccupant::try_from_slice(&to_occupant_sc.data.as_slice()).unwrap();
+        if to_occupant.occupant_id.is_some() {
+            return err!(StructureError::TileOccupied)
+        }
+
+        // Make sure from_portal.last_used isn't violated
+        let clock = Clock::get().unwrap();
+        let from_last_used_c = from_portal.components.get(&kyogen_ref.last_used).unwrap();
+        let mut from_last_used = ComponentLastUsed::try_from_slice(&from_last_used_c.data.as_slice()).unwrap();
+        if from_last_used.last_used != 0 && (from_last_used.last_used + from_last_used.recovery) >= clock.slot {
+            return err!(StructureError::StructureInCooldown)
+        }
         // Make sure unit.last_used isn't violated
+        let unit_last_used_c = unit.components.get(&kyogen_ref.last_used).unwrap();
+        let mut unit_last_used = ComponentLastUsed::try_from_slice(&unit_last_used_c.data.as_slice()).unwrap();
+        if unit_last_used.last_used != 0 && (unit_last_used.last_used + unit_last_used.recovery) >= clock.slot {
+            return err!(StructureError::UnitCooldown)
+        }
+
+        // Check from.location == from_portal.location
+        let from_location_sc = from.components.get(&kyogen_ref.location).unwrap();
+        let from_location = ComponentLocation::try_from_slice(&from_location_sc.data.as_slice()).unwrap();
+        let from_portal_location_sc = from_portal.components.get(&kyogen_ref.location).unwrap();
+        let from_portal_location = ComponentLocation::try_from_slice(&from_portal_location_sc.data.as_slice()).unwrap();
+        if from_location.x != from_portal_location.x || 
+           from_location.y != from_portal_location.y {
+            return err!(StructureError::WrongStructure)
+        }
+
+        // Check to.location == to_portal.location
+        let to_location_sc = to.components.get(&kyogen_ref.location).unwrap();
+        let to_location = ComponentLocation::try_from_slice(&to_location_sc.data.as_slice()).unwrap();
+        let to_portal_location_sc = to_portal.components.get(&kyogen_ref.location).unwrap();
+        let to_portal_location = ComponentLocation::try_from_slice(&to_portal_location_sc.data.as_slice()).unwrap();
+        if to_location.x != to_portal_location.x || 
+           to_location.y != to_portal_location.y {
+            return err!(StructureError::WrongStructure)
+        }
+
+        // Check that the From & To channels are the same
+        let from_structure_sc = from_portal.components.get(&structures_ref.structure).unwrap();
+        let from_structure = ComponentStructure::try_from_slice(&from_structure_sc.data.as_slice()).unwrap();
+        
+        let to_structure_sc = to_portal.components.get(&structures_ref.structure).unwrap();
+        let to_structure = ComponentStructure::try_from_slice(&to_structure_sc.data.as_slice()).unwrap();
+
+        match from_structure.structure {
+            StructureType::Portal { channel } => {
+                let from_channel = channel;
+                match to_structure.structure {
+                    StructureType::Portal { channel } => {
+                        if from_channel != channel {
+                            return err!(StructureError::PortalChannelMismatch)
+                        }
+                    }   
+                    _ => {
+                        return err!(StructureError::WrongStructure)
+                    }
+                }
+            }
+            _ => {
+                return err!(StructureError::WrongStructure)
+            }
+        }
+
+        // Pay the Fee for the Portal
+        let transfer_accounts = Transfer{
+            from: ctx.accounts.user_ata.to_account_info(),
+            to: ctx.accounts.kyogen_ata.to_account_info(),
+            authority: ctx.accounts.payer.to_account_info()
+        };
+
+        transfer(CpiContext::new(
+            ctx.accounts.token_program.to_account_info(), 
+            transfer_accounts,
+        ), from_structure.cost)?;
+
+        //// Updates
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_STRUCTURESSIGNER,
+            &[*ctx.bumps.get("structures_config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
 
         // Update from.occupant is None
+        from_occupant.occupant_id = None;
+        let modify_from_occupant_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.from.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_from_occupant_ctx, vec![
+            (kyogen_ref.occupant, from_occupant.try_to_vec().unwrap()), // Last Used
+        ])?;
+        
         // Update to.occupant = unit.id
-        // Update unit lastused
+        to_occupant.occupant_id = Some(unit.entity_id);
+        let modify_to_occupant_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.to.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_to_occupant_ctx, vec![
+            (kyogen_ref.occupant, to_occupant.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        // Update from_portal last used
+        from_last_used.last_used = clock.slot;
+        let modify_from_portal_last_used_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.from_portal.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_from_portal_last_used_ctx, vec![
+            (kyogen_ref.last_used, from_last_used.try_to_vec().unwrap()), // Last Used
+        ])?;
+
+        // Update unit last used
+        unit_last_used.last_used = clock.slot;
+        let modify_unit_last_used_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::ModifyComponent {
+                entity: ctx.accounts.unit.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(modify_unit_last_used_ctx, vec![
+            (kyogen_ref.last_used, unit_last_used.try_to_vec().unwrap()), // Last Used
+        ])?;   
+
         Ok(())
     }
 

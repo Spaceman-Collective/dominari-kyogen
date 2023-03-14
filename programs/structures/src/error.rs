@@ -22,4 +22,13 @@ pub enum StructureError {
 
     #[msg("")]
     WrongStructure,
+
+    #[msg("")]
+    TileOccupied,
+
+    #[msg("")]
+    UnitCooldown,
+
+    #[msg("")]
+    PortalChannelMismatch
 }
