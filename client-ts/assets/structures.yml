@@ -46,3 +46,18 @@ structure:
       wildings_pack: Wilding_Barracks
       creepers_pack: Creeper_Barracks
       synths_pack: Synth_Barracks
+---
+metadata:
+  name: "Meteor"
+image: 
+  link: "meteor.png"
+last_used: 
+  last_used: 0
+  recovery: 60 #30s
+active: 
+  active: true
+structure: 
+  cost: 0
+  structure:
+    Meteor:
+      solarite_per_use: 200

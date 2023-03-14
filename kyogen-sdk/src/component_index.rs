@@ -103,7 +103,7 @@ impl ComponentIndex {
         }
     }
 
-    pub fn get_structure_relevant_keys(&self) -> StructuresComponentKeys {
+    pub fn get_structures_relevant_keys(&self) -> StructuresComponentKeys {
         StructuresComponentKeys { 
             structure: self.get_component_pubkey(&"structure".to_string())
         }

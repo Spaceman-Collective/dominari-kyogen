@@ -51,6 +51,7 @@ impl MaxSize for Pack {
 #[derive(Debug)]
 #[account]
 pub struct InstanceIndex {
+    pub instance: u64,
     pub authority: Pubkey,
     pub config: GameConfig,
     pub map: u64,
@@ -76,7 +77,7 @@ pub enum PlayPhase {
  */
 impl MaxSize for InstanceIndex {
     fn get_max_size() -> u64 {
-        return 32+8+4+4+4+2;
+        return 8+32+8+4+4+4+2;
     }
 }
 
@@ -89,10 +90,11 @@ pub struct GameConfig {
     pub max_players: u16,
     pub game_token: Pubkey, //MINT for SPL token used to pay for things
     pub spawn_claim_multiplier: f64,
+    pub max_score: u64, 
 }
 
 impl MaxSize for GameConfig {
     fn get_max_size() -> u64 {
-        return 2 + 32 + 8;
+        return 2 + 32 + 8 + 8;
     }
 }

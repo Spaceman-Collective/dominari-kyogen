@@ -82,6 +82,7 @@ pub mod kyogen {
 
         registry::cpi::instance_registry(instance_ctx, instance)?;
         // Set up Instance Index
+        ctx.accounts.instance_index.instance = instance;
         ctx.accounts.instance_index.config = game_config; 
         ctx.accounts.instance_index.authority = ctx.accounts.payer.key();
         Ok(()) 
@@ -830,9 +831,9 @@ pub mod kyogen {
         Ok(())
     }
 
-    // Widraw Money from Instance Index
-
-    // Reclaim Sol from a Game
+    // TODO: Widraw Money from Instance Index
+    // TODO: Claim Victory
+    // TODO: Reclaim Sol from a Game
         // Close Map, Tile, Player
 }
 

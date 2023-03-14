@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use anchor_lang::prelude::*;
 use kyogen::{account::{InstanceIndex as KyogenIndex, PlayPhase}, component::*};
+use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
 use structures::component::ComponentStructure;
 use wasm_bindgen::{prelude::*, throw_str};
 use solana_client_wasm::WasmClient;
@@ -14,6 +15,7 @@ pub struct GameState {
     pub kyogen_id: Pubkey,
     pub registry_id: Pubkey,
     pub coreds_id: Pubkey,
+    pub structures_id: Pubkey,
     pub instance: u64, 
     #[wasm_bindgen(skip)]
     pub component_index: ComponentIndex,
@@ -21,6 +23,8 @@ pub struct GameState {
     pub client: WasmClient,
     #[wasm_bindgen(skip)]
     pub kyogen_index: Option<KyogenIndex>,
+    #[wasm_bindgen(skip)]
+    pub structures_index: Option<StructureIndex>,
     #[wasm_bindgen(skip)]
     pub entities: HashMap<u64, Entity>,
     #[wasm_bindgen(skip)]
@@ -36,6 +40,7 @@ impl GameState {
         kyogen_str: &str,
         registry_str: &str,
         coreds_str: &str,
+        structures_str: &str,
         instance: u64,
     ) -> Self {
         console_error_panic_hook::set_once();
@@ -43,10 +48,12 @@ impl GameState {
             kyogen_id: Pubkey::from_str(kyogen_str).unwrap(),
             registry_id: Pubkey::from_str(registry_str).unwrap(),
             coreds_id: Pubkey::from_str(coreds_str).unwrap(),
+            structures_id: Pubkey::from_str(structures_str).unwrap(),
             instance,
             component_index: ComponentIndex::new(registry_str),
             client: WasmClient::new(rpc),
             kyogen_index: None,
+            structures_index: None,
             entities: HashMap::new(),
             blueprint_index: BlueprintIndex::new(kyogen_str),
             is_state_loaded: false,
@@ -77,7 +84,7 @@ impl GameState {
         }
     }
 
-    pub async fn update_kyogen_index(&mut self) {
+    pub async fn update_index(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
 
         let kyogen_index = Pubkey::find_program_address(&[
@@ -85,13 +92,21 @@ impl GameState {
             registry_instance.to_bytes().as_ref(),
         ], &self.kyogen_id).0;
 
+        let structures_index = Pubkey::find_program_address(&[
+            SEEDS_PREFIXINDEX,
+            registry_instance.key().as_ref(),
+        ], &self.structures_id).0;
+
         let index:KyogenIndex = fetch_account(&self.client, &kyogen_index).await.unwrap();
+        let structures_index:StructureIndex = fetch_account(&self.client, &structures_index).await.unwrap();
+
         self.kyogen_index = Some(index.clone());
+        self.structures_index = Some(structures_index.clone());
     }
 
     pub async fn load_state(&mut self) {
         let registry_instance = get_registry_instance(&self.coreds_id, &self.registry_id, self.instance);
-        self.update_kyogen_index().await;
+        self.update_index().await;
         
         let mut entities: HashMap<u64, Entity> = HashMap::new();
         entities.insert(
@@ -157,13 +172,79 @@ impl GameState {
         for (i, e) in player_entities.iter().enumerate() {
             entities.insert(*self.kyogen_index.as_ref().unwrap().players.get(i).unwrap(), e.1.to_owned());
         }
-
-        // TODO: Load Structures Index
         // TODO: Load Structures Entities
+        let portal_keys:Vec<Pubkey> = self.structures_index.as_ref().unwrap().portal
+                                                                            .clone()   
+                                                                            .iter()
+                                                                            .map(|id| {
+                                                                                return get_key_from_id(
+                                                                                    &self.coreds_id,
+                                                                                    &registry_instance,
+                                                                                    id.clone()
+                                                                                )
+                                                                            })
+                                                                            .collect();
+
+        let portal_entities:Vec<(Pubkey, Entity)> = fetch_accounts::<Entity>(&self.client, &portal_keys).await;
+        for (i, e) in portal_entities.iter().enumerate() {
+            entities.insert(*self.structures_index.as_ref().unwrap().portal.get(i).unwrap(), e.1.to_owned());
+        }
+
+        let healer_keys:Vec<Pubkey> = self.structures_index.as_ref().unwrap().healer
+                                                                            .clone()   
+                                                                            .iter()
+                                                                            .map(|id| {
+                                                                                return get_key_from_id(
+                                                                                    &self.coreds_id,
+                                                                                    &registry_instance,
+                                                                                    id.clone()
+                                                                                )
+                                                                            })
+                                                                            .collect();
+
+        let healer_entities:Vec<(Pubkey, Entity)> = fetch_accounts::<Entity>(&self.client, &healer_keys).await;
+        for (i, e) in healer_entities.iter().enumerate() {
+            entities.insert(*self.structures_index.as_ref().unwrap().healer.get(i).unwrap(), e.1.to_owned());
+        }
+
+        let lootable_keys:Vec<Pubkey> = self.structures_index.as_ref().unwrap().lootable
+                                                                            .clone()   
+                                                                            .iter()
+                                                                            .map(|id| {
+                                                                                return get_key_from_id(
+                                                                                    &self.coreds_id,
+                                                                                    &registry_instance,
+                                                                                    id.clone()
+                                                                                )
+                                                                            })
+                                                                            .collect();
+
+        let lootable_entities:Vec<(Pubkey, Entity)> = fetch_accounts::<Entity>(&self.client, &lootable_keys).await;
+        for (i, e) in lootable_entities.iter().enumerate() {
+            entities.insert(*self.structures_index.as_ref().unwrap().lootable.get(i).unwrap(), e.1.to_owned());
+        }
+
+        let meteor_keys:Vec<Pubkey> = self.structures_index.as_ref().unwrap().meteor
+                                                                            .clone()   
+                                                                            .iter()
+                                                                            .map(|id| {
+                                                                                return get_key_from_id(
+                                                                                    &self.coreds_id,
+                                                                                    &registry_instance,
+                                                                                    id.clone()
+                                                                                )
+                                                                            })
+                                                                            .collect();
+
+        let meteor_entities:Vec<(Pubkey, Entity)> = fetch_accounts::<Entity>(&self.client, &meteor_keys).await;
+        for (i, e) in meteor_entities.iter().enumerate() {
+            entities.insert(*self.structures_index.as_ref().unwrap().meteor.get(i).unwrap(), e.1.to_owned());
+        }
 
         self.is_state_loaded = true;
         self.entities = entities;
     }
+
 
     pub async fn update_entity(&mut self, entity_id:u64) {
         // Don't worry about finding this in index, just fetch the account and update the entities table
@@ -193,8 +274,48 @@ impl GameState {
         throw_str("Tile Not Found!");
     }
 
+    pub fn get_structure_id(&self, x:u8, y:u8) -> String {
+        if self.structures_index.is_none() {
+            throw_str("Index isn't built yet!");
+        }
+
+        for id in &self.structures_index.as_ref().unwrap().healer {
+            let location = self.get_location(id).unwrap_throw();
+            if location.x == x && location.y == y {
+                return id.clone().to_string();
+            }
+        }
+
+        for id in &self.structures_index.as_ref().unwrap().portal {
+            let location = self.get_location(id).unwrap_throw();
+            if location.x == x && location.y == y {
+                return id.clone().to_string();
+            }
+        }
+
+        for id in &self.structures_index.as_ref().unwrap().lootable {
+            let location = self.get_location(id).unwrap_throw();
+            if location.x == x && location.y == y {
+                return id.clone().to_string();
+            }
+        }
+
+        for id in &self.structures_index.as_ref().unwrap().meteor {
+            let location = self.get_location(id).unwrap_throw();
+            if location.x == x && location.y == y {
+                return id.clone().to_string();
+            }
+        }
+
+        throw_str("Structure Not Found!");
+    }
+
     pub  fn get_tile_json(&self, tile_id:u64) -> JsValue {
         return serde_wasm_bindgen::to_value(&self.get_tile_info(tile_id)).unwrap()
+    }
+
+    pub fn get_structure_json(&self, structure_id:u64) -> JsValue {
+        return serde_wasm_bindgen::to_value(&self.get_structure_info(structure_id)).unwrap()
     }
 
     pub fn get_troop_json(&self, troop_id:u64) -> JsValue {
@@ -206,18 +327,38 @@ impl GameState {
             throw_str("Load state first!")
         }
         let mut tiles: Vec<TileJSON> = vec![];
-
         for tile_id in self.kyogen_index.as_ref().unwrap().tiles.iter() {
             tiles.push(self.get_tile_info(*tile_id));
         }
 
-        let structures: Vec<StructureJSON> = vec![];
-        // TODO fetch from Structures Index
+        let mut portals: Vec<StructureJSON> = vec![];
+        for id in self.structures_index.as_ref().unwrap().portal.iter() {
+            portals.push(self.get_structure_info(*id));
+        }
+
+        let mut healers: Vec<StructureJSON> = vec![];
+        for id in self.structures_index.as_ref().unwrap().healer.iter() {
+            healers.push(self.get_structure_info(*id));
+        }
+
+        let mut meteors: Vec<StructureJSON> = vec![];
+        for id in self.structures_index.as_ref().unwrap().meteor.iter() {
+            meteors.push(self.get_structure_info(*id));
+        }
+
+        let mut lootables: Vec<StructureJSON> = vec![];
+        for id in self.structures_index.as_ref().unwrap().lootable.iter() {
+            lootables.push(self.get_structure_info(*id));
+        }
+
 
         serde_wasm_bindgen::to_value(&MapJSON{
             map_id: self.kyogen_index.as_ref().unwrap().map.to_string(),
             tiles,
-            structures,
+            portals,
+            healers,
+            lootables,
+            meteors,
         }).unwrap()
     }
 
@@ -248,6 +389,26 @@ impl GameState {
 
 // Non WASM Functions
 impl GameState {
+    pub fn get_structure_info(&self, id:u64) -> StructureJSON {
+        let metadata = self.get_metadata(&id).unwrap();
+        let location = self.get_location(&id).unwrap();
+        let last_used = self.get_last_used(&id).unwrap();
+        let active = self.get_active(&id).unwrap();
+        let structure = self.get_structure(&id).unwrap();
+
+        StructureJSON { 
+            name: metadata.name, 
+            id: id.to_string(), 
+            x: location.x, 
+            y: location.y, 
+            last_used: last_used.last_used.to_string(), 
+            recovery: last_used.recovery.to_string(), 
+            active: active.active, 
+            structure: structure.structure, 
+            cost: structure.cost.to_string() 
+        }
+    }
+
     pub fn get_tile_info(&self, id: u64) -> TileJSON {
         let location = self.get_location(&id).unwrap();
         let spawn = self.get_spawn(&id).unwrap();
@@ -423,7 +584,7 @@ impl GameState {
 
     pub fn get_structure(&self, id:&u64) -> Option<ComponentStructure> {
         let serialized_components = &self.entities.get(&id).unwrap().components;
-        let sc = serialized_components.get(&self.component_index.get_structure_relevant_keys().structure.key());
+        let sc = serialized_components.get(&self.component_index.get_structures_relevant_keys().structure.key());
         if sc.is_none() { return None };
         Some(ComponentStructure::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
     }

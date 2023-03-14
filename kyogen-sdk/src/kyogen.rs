@@ -69,7 +69,7 @@ impl Kyogen {
         let blueprint_components: BlueprintJson = from_value(blueprint_json).unwrap();
         let mut components: BTreeMap<Pubkey, SerializedComponent> = BTreeMap::new();
         let kyogen_ref = component_index.get_kyogen_relevant_keys();
-        let structures_ref = component_index.get_structure_relevant_keys();
+        let structures_ref = component_index.get_structures_relevant_keys();
 
         // Ignoring Blueprint.metadata cause it'll get overwritten anyway
         // also ignoring Mapmeta, Location, occupant, playerstats, and owner as they aren't used in blueprints
@@ -303,6 +303,7 @@ impl Kyogen {
                 instance,
                 game_config: GameConfig {
                     max_players: game_config.max_players,
+                    max_score: game_config.max_score,
                     game_token,
                     spawn_claim_multiplier: game_config.spawn_claim_multiplier
                 }

@@ -7,6 +7,7 @@ pub struct GameConfigJSON {
     pub max_players: u16,
     pub game_token: String,
     pub spawn_claim_multiplier: f64,
+    pub max_score: u64,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -64,13 +65,31 @@ pub struct TileJSON {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StructureJSON {
     pub name: String,
-    pub id: String,
-    pub structure: StructureType
+    pub id: String, //u64
+
+    // Location
+    pub x: u8,
+    pub y: u8,
+
+    // Last Used
+    pub last_used: String, //u64,
+    pub recovery: String, //u64,
+    
+    // Active
+    pub active: bool,
+
+    // Structure
+    pub structure: StructureType,
+    pub cost: String, //u64
 }
+
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct MapJSON {
     pub map_id: String,
     pub tiles: Vec<TileJSON>,
-    pub structures: Vec<StructureJSON>,
+    pub portals: Vec<StructureJSON>,
+    pub healers: Vec<StructureJSON>,
+    pub lootables: Vec<StructureJSON>,
+    pub meteors: Vec<StructureJSON>,
 }

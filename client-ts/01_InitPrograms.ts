@@ -15,22 +15,31 @@ const programs = {
 }
 const ADMIN_KEY = anchor.web3.Keypair.fromSecretKey(Buffer.from(JSON.parse(readFileSync(process.env.PRIVATE_KEY_PATH).toString())));
 const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'finalized');
-let registry = new sdk.Registry(
+const registry = new sdk.Registry(
     programs.COREDS.toString(),
     programs.REGISTRY.toString(),
     ADMIN_KEY.publicKey.toString()
 );
-let kyogen = new sdk.Kyogen(
+const kyogen = new sdk.Kyogen(
     programs.COREDS.toString(),
     programs.REGISTRY.toString(),
     programs.KYOGEN.toString(),
     ADMIN_KEY.publicKey.toString()
 )
+
+const structures = new sdk.Structures(
+    programs.COREDS.toString(),
+    programs.REGISTRY.toString(),
+    programs.KYOGEN.toString(),
+    programs.STRUCTURES.toString(),
+    ADMIN_KEY.publicKey.toString()
+);
+
 let component_index = new sdk.ComponentIndex(programs.REGISTRY.toString());
 
 let components = YAML.parse(readFileSync('./assets/components.yml', {encoding: "utf-8"}));
 let units = YAML.parseAllDocuments(readFileSync('./assets/units.yml', {encoding: "utf-8"}));
-let structures = YAML.parseAllDocuments(readFileSync('./assets/structures.yml', {encoding: "utf-8"}));
+let structuresBlueprints = YAML.parseAllDocuments(readFileSync('./assets/structures.yml', {encoding: "utf-8"}));
 let packs = YAML.parseAllDocuments(readFileSync('./assets/packs.yml', {encoding: "utf-8"}));
 
 main();
@@ -81,7 +90,11 @@ async function init_programs() {
     )));
     console.log("Prepared kyogen init ix...")
 
-    // TODO: Init Structures
+    // Init Structures
+    instructions.push(ixWasmToJs(structures.initialize(
+        component_index
+    )));
+    console.log("Prepared structures init ix...")
 
     // Submit TX
     let ix_groups = await ixPack(instructions);
@@ -113,7 +126,14 @@ async function register_ab() {
         sdk.Kyogen.get_kyogen_signer_str(programs.KYOGEN.toString()),
         Object.values(components)
     )));
-    // TODO: Register Structures
+    // Register Structures
+    instructions.push(ixWasmToJs(registry.register_action_bundle(sdk.Structures.get_structures_signer_str(programs.STRUCTURES.toString()))));
+
+    // Register Components w/ Structures
+    instructions.push(ixWasmToJs(registry.add_components_to_action_bundle_registration(
+        sdk.Structures.get_structures_signer_str(programs.STRUCTURES.toString()),
+        Object.values(components)
+    )));
 
     // Submit Tx
     let ix_group = await ixPack(instructions);
@@ -148,7 +168,7 @@ async function register_blueprints() {
     }
     console.log("Prepared unit blueprints...");
     // Structures
-    for(let structure of structures){
+    for(let structure of structuresBlueprints){
         instructions.push(
             ixWasmToJs(
                 kyogen.register_blueprint(
