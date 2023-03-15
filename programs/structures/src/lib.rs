@@ -280,6 +280,7 @@ pub mod structures {
         }        
         
         emit!(MeteorMined{
+            instance: ctx.accounts.structures_index.instance,
             tile: ctx.accounts.tile.entity_id,
             meteor: ctx.accounts.meteor.entity_id,
             player: occupant.occupant_id.unwrap()
@@ -476,6 +477,7 @@ pub mod structures {
         ])?;   
 
         emit!(PortalUsed{
+            instance: ctx.accounts.structures_index.instance,
             from: from.entity_id,
             to: to.entity_id,
             unit: unit.entity_id
@@ -640,13 +642,78 @@ pub mod structures {
             (kyogen_ref.player_stats, player_stats.try_to_vec().unwrap()),
         ])?;
         
+        emit!(LootableLooted{
+            instance: ctx.accounts.structures_index.instance,
+            tile: tile.entity_id,
+            lootable: lootable.entity_id,
+            player: player.entity_id,
+        });
+
         Ok(())
     }
 
     // Use Healer
 
     // Claim Victory
+    pub fn claim_victory(ctx:Context<ClaimVictory>) -> Result<()> {
+        // Check that the map meta is >= max score from config
+        // Change mapmeta to finished
 
+        // References
+        let kyogen_ref = &ctx.accounts.kyogen_config.components;
+
+        let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
+        let mut mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
+
+        let s_idx = &ctx.accounts.structures_index;
+        let k_idx = &ctx.accounts.kyogen_index;
+        let player = &ctx.accounts.player;
+
+        if s_idx.high_score.1 < k_idx.config.max_score {
+            return err!(StructureError::HighScoreNotReached)
+        }
+
+        // Check player.id == highscore.0
+        if s_idx.high_score.0 != player.entity_id {
+            return err!(StructureError::WrongPlayer)
+        }
+
+        // Change Game State
+        mapmeta.game_status = PlayPhase::Finished;
+
+        let config_seeds:&[&[u8]] = &[
+            SEEDS_STRUCTURESSIGNER,
+            &[*ctx.bumps.get("structures_config").unwrap()]
+        ];
+        let signer_seeds = &[config_seeds];
+        let modify_gamestate_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),
+            registry::cpi::accounts::ModifyComponent{
+                entity: ctx.accounts.map.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),
+            },
+            signer_seeds
+        );
+        registry::cpi::req_modify_component(
+            modify_gamestate_ctx,
+            vec![(kyogen_ref.mapmeta, mapmeta.try_to_vec().unwrap())]
+        )?;
+
+        let player_stats_sc = player.components.get(&kyogen_ref.player_stats).unwrap();
+        let player_stats = ComponentPlayerStats::try_from_slice(&player_stats_sc.data.as_slice()).unwrap();
+
+        emit!(GameFinished{
+            instance: s_idx.instance,
+            winning_player_id: player.entity_id,
+            winning_player_key: player_stats.key,
+            high_score: s_idx.high_score.1
+        });
+
+        Ok(())
+    }
 }
 
 pub fn get_random_u64(max: u64) -> u64 {

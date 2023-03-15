@@ -439,6 +439,67 @@ impl Structures {
 
 
     // Use Healer
+
+    // Claim Victory
+    pub fn claim_victory(&self, instance: u64, map_id:u64, winning_player_id: u64) -> JsValue {
+        let payer = self.payer;
+        let structures_config = Structures::get_structures_signer(&self.structures_id);
+
+        // Registry
+        let registry_program = self.registry_id;
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+
+        // Core DS
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+        let coreds = self.core_id;
+
+        let player = get_key_from_id(&self.core_id, &registry_instance, winning_player_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
+
+
+        // Structures
+        let structures_index = Pubkey::find_program_address(&[
+            SEEDS_PREFIXINDEX,
+            instance.to_be_bytes().as_ref(),
+        ], &self.structures_id).0;
+        let structures_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            structures_config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        // Kyogen
+        let kyogen_config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let kyogen_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+
+        let ix = Instruction {
+            program_id: self.structures_id,
+            accounts: structures::accounts::ClaimVictory {
+                payer, 
+                system_program,
+                structures_config,
+                structures_index,
+                structures_registration,
+                kyogen_config,
+                kyogen_index,
+                registry_config,
+                registry_instance,
+                registry_program,
+                coreds,
+                map,
+                player
+            }.to_account_metas(None),
+            data: structures::instruction::ClaimVictory {}.data()
+        };
+        to_value(&ix).unwrap()  
+    }
 }
 
 

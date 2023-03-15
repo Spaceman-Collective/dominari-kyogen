@@ -319,3 +319,36 @@ pub struct UseLootable<'info> {
     #[account(mut)]
     pub player: Box<Account<'info, Entity>>,
 }
+
+#[derive(Accounts)]
+pub struct ClaimVictory<'info> {
+    pub payer: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // Structures
+    #[account(
+        constraint = structures_index.instance == kyogen_index.instance
+    )]
+    pub structures_index: Box<Account<'info, StructureIndex>>,
+    #[account(
+        seeds=[SEEDS_STRUCTURESSIGNER],
+        bump,
+    )]
+    pub structures_config: Box<Account<'info, Config>>,
+
+    // Kyogen
+    pub kyogen_config: Box<Account<'info, KyogenConfig>>,
+    pub kyogen_index: Box<Account<'info, KyogenIndex>>,
+
+    // Registry
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub structures_registration: Box<Account<'info, ActionBundleRegistration>>,
+
+    // CoreDS 
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+
+    pub map: Box<Account<'info, Entity>>,
+    pub player: Box<Account<'info, Entity>>, 
+}

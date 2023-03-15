@@ -93,3 +93,9 @@ pub struct MapJSON {
     pub lootables: Vec<StructureJSON>,
     pub meteors: Vec<StructureJSON>,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct HighScoreJSON {
+    pub player_id: String, //u64
+    pub high_score: String, //u64
+}

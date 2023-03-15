@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use anchor_lang::prelude::*;
 use kyogen::{account::{InstanceIndex as KyogenIndex}, component::*};
+use serde_wasm_bindgen::to_value;
 use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
 use structures::component::ComponentStructure;
 use wasm_bindgen::{prelude::*, throw_str};
@@ -88,6 +89,13 @@ impl GameState {
 
     pub fn get_map_id(&self) -> String {
         self.kyogen_index.as_ref().unwrap().map.to_string()
+    }
+
+    pub fn get_current_high_score(&self) -> JsValue {
+        to_value(&HighScoreJSON{
+            player_id: self.structures_index.as_ref().unwrap().high_score.0.to_string(),
+            high_score: self.structures_index.as_ref().unwrap().high_score.0.to_string()
+        }).unwrap()
     }
 
     pub fn get_game_config(&self) -> JsValue {

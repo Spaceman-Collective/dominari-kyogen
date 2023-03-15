@@ -36,5 +36,11 @@ pub enum StructureError {
     GamePaused,
 
     #[msg("")]
-    InvalidPack
+    InvalidPack,
+
+    #[msg("")]
+    HighScoreNotReached,
+
+    #[msg("")]
+    WrongPlayer,
 }
