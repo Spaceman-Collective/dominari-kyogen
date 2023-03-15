@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use anchor_lang::{prelude::*, solana_program::pubkey};
+use anchor_lang::prelude::*;
 use kyogen::{account::{InstanceIndex as KyogenIndex}, component::*};
 use serde_wasm_bindgen::to_value;
 use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
