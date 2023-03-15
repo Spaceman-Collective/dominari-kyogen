@@ -1,6 +1,6 @@
 use std::str::FromStr;
 use anchor_lang::prelude::*;
-use kyogen::{account::{InstanceIndex as KyogenIndex, PlayPhase}, component::*};
+use kyogen::{account::{InstanceIndex as KyogenIndex}, component::*};
 use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
 use structures::component::ComponentStructure;
 use wasm_bindgen::{prelude::*, throw_str};
@@ -76,12 +76,18 @@ impl GameState {
     }
     
     pub fn get_play_phase(&self) -> String  {
-        match self.kyogen_index.as_ref().unwrap().play_phase {
+        let mapmeta = &self.get_mapmeta(&self.kyogen_index.as_ref().unwrap().map).unwrap();
+
+        match mapmeta.game_status {
             PlayPhase::Lobby => return "Lobby".to_string(),
             PlayPhase::Play => return "Play".to_string(),
             PlayPhase::Paused => return "Paused".to_string(),
             PlayPhase::Finished => return "Finished".to_string(),
         }
+    }
+
+    pub fn get_map_id(&self) -> String {
+        self.kyogen_index.as_ref().unwrap().map.to_string()
     }
 
     pub fn get_game_config(&self) -> JsValue {

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{account::PlayPhase, constant::Clans};
+use crate::{component::PlayPhase, constant::Clans};
 
 #[event]
 pub struct GameStateChanged{

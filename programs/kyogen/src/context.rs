@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use anchor_lang::prelude::*;
 use core_ds::{account::{MaxSize, RegistryInstance, Entity}, state::SerializedComponent, program::CoreDs};
 use registry::{constant::SEEDS_REGISTRYSIGNER, account::{RegistryConfig, ActionBundleRegistration}, program::Registry};
-use crate::{constant::*, account::*};
+use crate::{constant::*, account::*, component::PlayPhase};
 use anchor_spl::{associated_token::{get_associated_token_address, AssociatedToken}, token::{Token, TokenAccount, Mint}};
 
 #[derive(Accounts)]
@@ -137,6 +137,7 @@ pub struct CreateGameInstance<'info> {
 #[instruction(new_game_state: PlayPhase)]
 pub struct ChangeGameState<'info> {
     pub payer: Signer<'info>,
+
     #[account(
         // Only admin can create new games
         constraint = payer.key() == config.authority.key(),
@@ -145,9 +146,23 @@ pub struct ChangeGameState<'info> {
 
     #[account(mut)]
     pub instance_index: Box<Account<'info, InstanceIndex>>, 
-
-    // Used to figure out what instance for event
+    
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+    
+    // Core DS
+    pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
+
+    #[account(mut)]
+    pub map: Box<Account<'info, Entity>>,
 }
 
 #[derive(Accounts)]
@@ -311,6 +326,7 @@ pub struct ClaimSpawn<'info> {
     // CoreDS
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub tile_entity: Box<Account<'info, Entity>>,
     pub unit_entity: Box<Account<'info, Entity>>,
@@ -352,6 +368,7 @@ pub struct SpawnUnit <'info> {
     // Core Ds
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
+    pub map: Box<Account<'info, Entity>>,
     /// CHECK: Created via CPI
     #[account(mut)]
     pub unit: AccountInfo<'info>,
@@ -390,6 +407,7 @@ pub struct MoveUnit<'info>{
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
    
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub from: Box<Account<'info, Entity>>,
     #[account(mut)]
@@ -428,6 +446,7 @@ pub struct AttackUnit<'info> {
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub attacker: Box<Account<'info, Entity>>,
     #[account(mut)]

@@ -21,13 +21,24 @@ impl MaxSize for ComponentMetadata {
 pub struct ComponentMapMeta{
     pub max_x: u8,
     pub max_y: u8,
+    pub game_status: PlayPhase,
 }
 
 impl MaxSize for ComponentMapMeta {
     fn get_max_size() -> u64 {
-        return 1 + 1
+        return 1 + 1 + 2;
     }
 }
+
+#[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
+#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
+pub enum PlayPhase {
+    Lobby,
+    Play,
+    Paused,
+    Finished
+}
+
 
 #[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
 #[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone)]

@@ -171,7 +171,7 @@ async function createPlayers() {
 
 async function unpause() {
     const ix1 = ixWasmToJs(
-        kyogen.change_game_state(instance, "Play")
+        kyogen.change_game_state(instance, BigInt(gamestate.get_map_id()), "Play")
     );
 
     const msg = new anchor.web3.TransactionMessage({
@@ -201,6 +201,7 @@ async function spawnUnit(pkyogen: sdk.Kyogen, player: anchor.web3.Keypair, x:num
     let ix = ixWasmToJs(
         pkyogen.spawn_unit(
             instance,
+            BigInt(gamestate.get_map_id()),
             randomU64(),
             BigInt(gamestate.get_tile_id(x, y)),
             BigInt(gamestate.get_playerjson_by_key(player.publicKey.toString()).id),
@@ -244,6 +245,7 @@ async function moveTroop(
     let ix = ixWasmToJs(
         pkyogen.move_unit(
             instance,
+            BigInt(gamestate.get_map_id()),
             unit,
             BigInt(gamestate.get_playerjson_by_key(player.publicKey.toString()).id),
             from.id,
@@ -280,6 +282,7 @@ async function attackTile(
     let ix = ixWasmToJs(
         pkyogen.attack_unit(
             instance,
+            BigInt(gamestate.get_map_id()),
             BigInt(attacker),
             BigInt(defender),
             BigInt(defending_tile.id)

@@ -58,16 +58,6 @@ pub struct InstanceIndex {
     pub tiles: Vec<u64>,
     pub units: Vec<u64>,
     pub players: Vec<u64>,
-    pub play_phase: PlayPhase,
-}
-
-#[cfg_attr(feature = "sdk", derive(serde::Serialize, serde::Deserialize))]
-#[derive(AnchorSerialize, AnchorDeserialize, Debug, Clone, PartialEq)]
-pub enum PlayPhase {
-    Lobby,
-    Play,
-    Paused,
-    Finished
 }
 
 /**
@@ -77,7 +67,7 @@ pub enum PlayPhase {
  */
 impl MaxSize for InstanceIndex {
     fn get_max_size() -> u64 {
-        return 8+32+8+4+4+4+2;
+        return 8+32+8+4+4+4;
     }
 }
 

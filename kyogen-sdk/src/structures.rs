@@ -184,7 +184,7 @@ impl Structures {
     }
 
     // Use Meteor
-    pub fn use_meteor(&self, instance:u64, meteor_id:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_mint:&str) -> JsValue {
+    pub fn use_meteor(&self, instance:u64, map_id: u64, meteor_id:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_mint:&str) -> JsValue {
         let payer = self.payer;
         let structures_config = Structures::get_structures_signer(&self.structures_id);
 
@@ -204,6 +204,7 @@ impl Structures {
         let tile = get_key_from_id(&self.core_id, &registry_instance, tile_id);
         let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
         let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
         // Structures
         let structures_index = Pubkey::find_program_address(&[
@@ -249,7 +250,8 @@ impl Structures {
                 structures_registration,
                 meteor,
                 unit,
-                player
+                player,
+                map,
             }.to_account_metas(None),
             data: structures::instruction::UseMeteor {}.data()
         };
@@ -261,6 +263,7 @@ impl Structures {
     pub fn use_portal(
         &self, 
         instance:u64,
+        map_id: u64,
         game_token_mint:&str,
         from_tile: u64,
         from_portal: u64,
@@ -310,6 +313,7 @@ impl Structures {
         let game_token = Pubkey::from_str(&game_token_mint).unwrap();
         let user_ata = get_associated_token_address(&payer, &game_token);
         let kyogen_ata = get_associated_token_address(&kyogen_index, &game_token);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
 
         let ix = Instruction {
@@ -336,6 +340,7 @@ impl Structures {
                 to,
                 to_portal,
                 unit,
+                map,
             }.to_account_metas(None),
             data: structures::instruction::UsePortal {}.data()
         };
@@ -347,6 +352,7 @@ impl Structures {
     pub fn use_lootable(
         &self, 
         instance:u64,
+        map_id: u64,
         game_token_mint:&str,
         tile_id:u64,
         unit_id:u64,
@@ -373,6 +379,7 @@ impl Structures {
         let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
         let lootable = get_key_from_id(&self.core_id, &registry_instance, lootable_id);
         let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
 
         // Structures
@@ -417,6 +424,7 @@ impl Structures {
                 structures_index,
                 kyogen_index,
                 structures_registration,
+                map,
                 tile,
                 unit,
                 lootable,

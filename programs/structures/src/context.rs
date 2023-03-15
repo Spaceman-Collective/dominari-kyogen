@@ -185,7 +185,7 @@ pub struct UseMeteor<'info> {
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
-
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub meteor: Box<Account<'info, Entity>>,
     pub tile: Box<Account<'info, Entity>>,
@@ -246,7 +246,7 @@ pub struct UsePortal<'info> {
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
-
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub from: Box<Account<'info, Entity>>, 
     #[account(mut)]
@@ -309,6 +309,7 @@ pub struct UseLootable<'info> {
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
+    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub tile: Box<Account<'info, Entity>>, 
     #[account(mut)]

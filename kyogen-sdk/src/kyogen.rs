@@ -3,7 +3,7 @@ use std::str::FromStr;
 use core_ds::account::MaxSize;
 use core_ds::constant::SEEDS_REGISTRYINSTANCE_PREFIX;
 use core_ds::state::SerializedComponent;
-use kyogen::account::{GameConfig, PlayPhase};
+use kyogen::account::GameConfig;
 use kyogen::constant::*;
 use registry::constant::{SEEDS_REGISTRYINDEX, SEEDS_ACTIONBUNDLEREGISTRATION};
 use wasm_bindgen::prelude::*;
@@ -313,18 +313,13 @@ impl Kyogen {
     }
 
     // Change Game State
-    pub fn change_game_state(&self, instance: u64, play_phase_str: &str) -> JsValue {
+    pub fn change_game_state(&self, instance: u64, map_id: u64, play_phase_str: &str) -> JsValue {
         let payer = self.payer;
-        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
         let registry_instance = Pubkey::find_program_address(&[
             SEEDS_REGISTRYINSTANCE_PREFIX,
             self.registry_id.to_bytes().as_ref(),
             instance.to_be_bytes().as_ref(),
         ], &self.core_id).0;
-        let instance_index = Pubkey::find_program_address(&[
-            SEEDS_INSTANCEINDEX,
-            registry_instance.to_bytes().as_ref(),
-        ], &self.kyogen_id).0;
 
         let new_game_state: PlayPhase;
         match play_phase_str {
@@ -335,13 +330,38 @@ impl Kyogen {
             &_ => new_game_state = PlayPhase::Paused
         }
 
+        // CoreDS
+        let coreds = self.core_id;
+
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
+
+        // Action Bundle
+        let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let instance_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
         let ix = Instruction {
             program_id: self.kyogen_id,
             accounts: kyogen::accounts::ChangeGameState {
                 payer,
                 config,
                 instance_index,
-                registry_instance
+                registry_instance,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                coreds,
+                map,
             }.to_account_metas(None),
             data: kyogen::instruction::ChangeGameState {
                 new_game_state,
@@ -564,7 +584,7 @@ impl Kyogen {
     }
 
     // Claim Spawn
-    pub fn claim_spawn(&self, instance:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_str: String) -> JsValue {
+    pub fn claim_spawn(&self, instance:u64, map_id:u64, tile_id: u64, unit_id:u64, player_id:u64, game_token_str: String) -> JsValue {
         let payer = self.payer;
 
         // CoreDS
@@ -578,6 +598,7 @@ impl Kyogen {
         let unit_entity = get_key_from_id(&self.core_id, &registry_instance, unit_id);
         let tile_entity = get_key_from_id(&self.core_id, &registry_instance, tile_id);
         let player_entity = get_key_from_id(&self.core_id, &registry_instance, player_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
         // Action Bundle
         let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
@@ -617,6 +638,7 @@ impl Kyogen {
                 from_ata,
                 to_ata,
                 token_program,
+                map,
             }.to_account_metas(None),
             data: kyogen::instruction::ClaimSpawn {}.data()
         };
@@ -624,7 +646,7 @@ impl Kyogen {
     }
 
     // Spawn Unit
-    pub fn spawn_unit(&self, instance:u64, unit_id:u64, tile_id: u64, player_id: u64, unit_blueprint_str: String) -> JsValue {
+    pub fn spawn_unit(&self, instance:u64, map_id: u64, unit_id:u64, tile_id: u64, player_id: u64, unit_blueprint_str: String) -> JsValue {
         let payer = self.payer;
 
         // CoreDS
@@ -638,6 +660,7 @@ impl Kyogen {
         let unit = get_key_from_id(&self.core_id, &registry_instance, unit_id);
         let tile = get_key_from_id(&self.core_id, &registry_instance, tile_id);
         let player = get_key_from_id(&self.core_id, &registry_instance, player_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
         // Action Bundle
         let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
@@ -670,7 +693,8 @@ impl Kyogen {
                 player,
                 unit,
                 tile,
-                unit_blueprint
+                unit_blueprint,
+                map
             }.to_account_metas(None),
             data: kyogen::instruction::SpawnUnit {
                 unit_id
@@ -680,7 +704,7 @@ impl Kyogen {
     }
 
     // Move Unit
-    pub fn move_unit(&self, instance:u64, unit_id:u64, player_id:u64, from_tile_id:u64, to_tile_id: u64) -> JsValue {
+    pub fn move_unit(&self, instance:u64, map_id:u64, unit_id:u64, player_id:u64, from_tile_id:u64, to_tile_id: u64) -> JsValue {
         let payer = self.payer;
 
         // CoreDS
@@ -696,7 +720,8 @@ impl Kyogen {
 
         let from = get_key_from_id(&self.core_id, &registry_instance, from_tile_id);
         let to = get_key_from_id(&self.core_id, &registry_instance, to_tile_id);
-
+        
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
         // Action Bundle
         let config = Kyogen::get_kyogen_signer(&self.kyogen_id);
@@ -728,7 +753,8 @@ impl Kyogen {
                 player,
                 unit,
                 from,
-                to
+                to,
+                map
             }.to_account_metas(None),
             data: kyogen::instruction::MoveUnit {}.data()
         };
@@ -736,7 +762,7 @@ impl Kyogen {
     }
 
     // Attack Unit
-    pub fn attack_unit(&self, instance:u64, attacker_id: u64, defender_id: u64, defending_tile_id: u64) -> JsValue {
+    pub fn attack_unit(&self, instance:u64, map_id: u64, attacker_id: u64, defender_id: u64, defending_tile_id: u64) -> JsValue {
         let payer = self.payer;
 
         // CoreDS
@@ -750,6 +776,7 @@ impl Kyogen {
         let attacker = get_key_from_id(&self.core_id, &registry_instance, attacker_id);
         let defender = get_key_from_id(&self.core_id, &registry_instance, defender_id);
         let defending_tile = get_key_from_id(&self.core_id, &registry_instance, defending_tile_id);
+        let map = get_key_from_id(&self.core_id, &registry_instance, map_id);
 
 
         // Action Bundle
@@ -780,7 +807,8 @@ impl Kyogen {
                 coreds,
                 attacker,
                 defender,
-                defending_tile
+                defending_tile,
+                map
             }.to_account_metas(None),
             data: kyogen::instruction::AttackUnit {}.data()
         };

@@ -152,14 +152,16 @@ pub mod structures {
     // Use Meteor    
         // Transfer Solarite from SI to User
     pub fn use_meteor(ctx:Context<UseMeteor>) -> Result<()> {
-        // Check the game isnt' paused
-        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
-            return err!(StructureError::GamePaused)
-        }
-
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
+        // Check the game isnt' paused
+        let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
+        let mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
+        if mapmeta.game_status != PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
         
+
         let tile = &ctx.accounts.tile;
         let unit = &ctx.accounts.unit;
         let meteor = &ctx.accounts.meteor;
@@ -289,13 +291,15 @@ pub mod structures {
      
     // Use Portal
     pub fn use_portal(ctx:Context<UsePortal>) -> Result<()> {
-        // Check the game isnt' paused
-        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
-            return err!(StructureError::GamePaused)
-        }
-        
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
+        
+        // Check the game isnt' paused
+        let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
+        let mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
+        if mapmeta.game_status != PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
 
         let from = &ctx.accounts.from;
         let from_portal = &ctx.accounts.from_portal;
@@ -482,14 +486,16 @@ pub mod structures {
 
     // Use Lootable
     pub fn use_lootable(ctx:Context<UseLootable>) -> Result<()> {
-        // Check the game isnt' paused
-        if ctx.accounts.kyogen_index.play_phase != kyogen::account::PlayPhase::Play {
-            return err!(StructureError::GamePaused)
-        }
-
         // References
         let kyogen_ref = &ctx.accounts.kyogen_config.components;
         let structures_ref = &ctx.accounts.structures_config.components;
+
+        // Check the game isnt' paused
+        let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
+        let mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
+        if mapmeta.game_status != PlayPhase::Play {
+            return err!(StructureError::GamePaused)
+        }
 
         let tile = &ctx.accounts.tile;
         let unit = &ctx.accounts.unit;
