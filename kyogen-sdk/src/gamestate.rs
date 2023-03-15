@@ -1,5 +1,5 @@
 use std::str::FromStr;
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::pubkey};
 use kyogen::{account::{InstanceIndex as KyogenIndex}, component::*};
 use serde_wasm_bindgen::to_value;
 use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
@@ -632,13 +632,23 @@ pub async fn fetch_account<T: AccountDeserialize>(client: &WasmClient, pubkey: &
  * This is because the accounts returned don't have the pubkey attached to them.
  */
 pub async fn fetch_accounts<T: AccountDeserialize>(client: &WasmClient, pubkeys: &Vec<Pubkey>) -> Vec<(Pubkey,T)> {
-    let accounts = &client.get_multiple_accounts(pubkeys).await.unwrap();
+    let chunks: Vec<Vec<Pubkey>> = pubkeys.chunks(99).map(|p| p.into()).collect();
+    let mut accounts: Vec<std::option::Option<solana_client_wasm::solana_sdk::account::Account>> = vec![];
+    for chunk in chunks {
+        accounts.append(&mut get_accounts(client, &chunk).await)
+    }
+
+    //let accounts = &client.get_multiple_accounts(pubkeys).await.unwrap();
     let mut results = vec![];
     for (i, account) in accounts.iter().enumerate() {
         let result: Result<T> = deserialize_account(&account.as_ref().unwrap().data).await;
         results.push((pubkeys.get(i).unwrap().clone(), result.unwrap()));
     }
     return results;
+}
+
+pub async fn get_accounts(client: &WasmClient, pubkeys: &Vec<Pubkey>) -> Vec<std::option::Option<solana_client_wasm::solana_sdk::account::Account>> {
+    client.get_multiple_accounts(pubkeys).await.unwrap()
 }
 
 pub async fn deserialize_account<T: AccountDeserialize>(mut data: &[u8]) -> Result<T> {
