@@ -283,7 +283,7 @@ pub mod structures {
             instance: ctx.accounts.structures_index.instance,
             tile: ctx.accounts.tile.entity_id,
             meteor: ctx.accounts.meteor.entity_id,
-            player: occupant.occupant_id.unwrap()
+            player: player.entity_id,
         });
 
         Ok(())
