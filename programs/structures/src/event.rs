@@ -4,6 +4,7 @@ use anchor_lang::prelude::*;
 #[event]
 pub struct MeteorMined { 
     pub tile: u64,
+    pub meteor: u64,
     pub player: u64,
 }
 

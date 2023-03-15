@@ -279,6 +279,7 @@ pub mod structures {
         
         emit!(MeteorMined{
             tile: ctx.accounts.tile.entity_id,
+            meteor: ctx.accounts.meteor.entity_id,
             player: occupant.occupant_id.unwrap()
         });
 
