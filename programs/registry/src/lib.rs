@@ -78,6 +78,10 @@ pub mod registry {
     }
 
     /**
+     * Removes an instance from AB Registration
+     */
+
+    /**
      * Anyone can register a component with the registry as long as it's a unique URI
      */
     pub fn register_component(ctx:Context<RegisterComponent>, schema:String) -> Result<()> {

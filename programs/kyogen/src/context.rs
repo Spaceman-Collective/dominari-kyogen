@@ -141,6 +141,8 @@ pub struct ChangeGameState<'info> {
     #[account(
         // Only admin can create new games
         constraint = payer.key() == config.authority.key(),
+        seeds=[SEEDS_KYOGENSIGNER],
+        bump,
     )]
     pub config: Box<Account<'info, Config>>,
 
@@ -453,6 +455,42 @@ pub struct AttackUnit<'info> {
     pub defender: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub defending_tile: Box<Account<'info, Entity>>,
+}
+
+#[derive(Accounts)]
+pub struct CloseEntity<'info>{
+    #[account(mut)]
+    pub receiver: Signer<'info>,
+    pub system_program: Program<'info, System>,
+
+    // Kyogen
+    pub kyogen_config: Box<Account<'info, Config>>, // Need for component reference
+    pub kyogen_index: Box<Account<'info, InstanceIndex>>, // Need for Tile entities
+
+    // Registry
+    #[account(
+        seeds = [SEEDS_REGISTRYSIGNER.as_slice()],
+        bump,
+        seeds::program = registry::id()
+    )]
+    pub registry_config: Account<'info, RegistryConfig>,
+    pub registry_program: Program<'info, Registry>,
+    pub kyogen_registration: Box<Account<'info, ActionBundleRegistration>>,
+    
+    // Core DS
+    pub coreds: Program<'info, CoreDs>, 
+    pub registry_instance: Account<'info, RegistryInstance>,
+
+    pub map: Box<Account<'info, Entity>>,
+    #[account(mut)]
+    pub entity: Box<Account<'info, Entity>>,
+}
+
+#[derive(Accounts)]
+pub struct CloseKyogenIndex <'info> {
+    #[account(mut)]
+    pub receiver: Signer<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 ////////////////////////////////////////////////////

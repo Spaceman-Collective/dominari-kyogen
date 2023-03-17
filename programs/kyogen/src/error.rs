@@ -54,4 +54,18 @@ pub enum KyogenError {
 
     #[msg("")]
     UnitNotActive,
+
+    #[msg("")]
+    EntityCannotBeClosedByThisProgram,
+
+    #[msg("")]
+    PlayerCanOnlyBeClosedByOwner,
+
+    #[msg("")]
+    UnitCanOnlyBeClosedByOwner,
+
+    #[msg("")]
+    TileCanOnlyBeClosedByInstanceAuthority,
+
+    
 }

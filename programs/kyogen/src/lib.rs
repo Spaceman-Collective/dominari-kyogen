@@ -183,7 +183,7 @@ pub mod kyogen {
         // So we can trust in the input for x,y isn't duplicated
         let kyogen_ref = &ctx.accounts.config.components;
 
-        // Tile has Metadata, Location, Feature, Occupant, Owner and Cost components
+        // Tile has Metadata, Location, Occupant components
         // Tile also has a Spawnable Component
         let mut components: BTreeMap<Pubkey, SerializedComponent> = BTreeMap::new();
         let metadata = ComponentMetadata {
@@ -867,9 +867,80 @@ pub mod kyogen {
     }
 
     // TODO: Widraw Money from Instance Index
-    // TODO: Claim Victory
     // TODO: Reclaim Sol from a Game
-        // Close Map, Tile, Player
+        // Close Tile, Player, Instance Index
+
+    /**
+     * Closes Tile, Player and Unit entities
+     */
+    pub fn close_entity(ctx: Context<CloseEntity>) -> Result<()> {
+        // For Tile entities, require payer == instance_index.authority
+        // For Player & Unit entities, grab the owner component and compare it against payer
+
+        let kyogen_ref = &ctx.accounts.kyogen_config.components;
+        let entity = &ctx.accounts.entity;
+
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_KYOGENSIGNER,
+            &[*ctx.bumps.get("kyogen_config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+        let close_entity_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::RemoveEntity {
+                benefactor: ctx.accounts.receiver.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                entity: ctx.accounts.entity.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.kyogen_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.kyogen_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+
+        let entity_player_stats_sc = entity.components.get(&kyogen_ref.player_stats);
+        if entity_player_stats_sc.is_some() {
+            // This is a Player (check player_stats.key == receiver.key)
+            let player_stats = ComponentPlayerStats::try_from_slice(&entity_player_stats_sc.unwrap().data.as_slice()).unwrap();
+            if player_stats.key.key() != ctx.accounts.receiver.key() {
+                return err!(KyogenError::PlayerCanOnlyBeClosedByOwner)
+            }
+            registry::cpi::req_remove_entity(close_entity_ctx)?;
+            return Ok(());
+        }
+
+        let entity_owner_sc = entity.components.get(&kyogen_ref.owner);
+        if entity_owner_sc.is_some() {
+            // This is a Unit
+            let unit_owner = ComponentOwner::try_from_slice(&entity_owner_sc.unwrap().data.as_slice()).unwrap();
+            if unit_owner.owner.unwrap().key() != ctx.accounts.receiver.key() {
+                return err!(KyogenError::UnitCanOnlyBeClosedByOwner)
+            }
+            registry::cpi::req_remove_entity(close_entity_ctx)?;
+            return Ok(());
+        }
+        
+        let entity_spawnable_sc = entity.components.get(&kyogen_ref.spawn);
+        if entity_spawnable_sc.is_some() {
+            // This is a Tile
+            if ctx.accounts.kyogen_index.authority.key() != ctx.accounts.receiver.key() {
+                return err!(KyogenError::TileCanOnlyBeClosedByInstanceAuthority)
+            }
+            registry::cpi::req_remove_entity(close_entity_ctx)?;
+            return Ok(());
+        }
+
+        return err!(KyogenError::EntityCannotBeClosedByThisProgram)
+    }
+
+
+    /* 
+    pub fn close_kyogen_index(ctx:Context<CloseKyogenIndex>) -> Result<()> {
+        // Also realloc registry index to remove this instance from registration
+        Ok(())
+    }
+    */
 }
 
 pub fn get_random_u64(max: u64) -> u64 {

@@ -286,7 +286,7 @@ async function mint_spl(instance:bigint) {
         mint,
         structures_ata,
         ADMIN_KEY.publicKey,
-        config.max_score,
+        config.tokens_minted,
     );
-    console.log(`${config.max_score} tokens minted`)
+    console.log(`${config.tokens_minted} tokens minted`)
 }
