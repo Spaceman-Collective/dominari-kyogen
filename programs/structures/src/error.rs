@@ -43,4 +43,7 @@ pub enum StructureError {
 
     #[msg("")]
     WrongPlayer,
+
+    #[msg("")]
+    NotAStructure,
 }

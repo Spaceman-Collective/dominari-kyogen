@@ -17,6 +17,7 @@ impl MaxSize for Config {
 #[account]
 pub struct StructureIndex {
     pub instance: u64,
+    pub authority: Pubkey,
     pub portal: Vec<u64>,
     pub healer: Vec<u64>,
     pub lootable: Vec<u64>,
@@ -26,6 +27,6 @@ pub struct StructureIndex {
 
 impl MaxSize for StructureIndex {
     fn get_max_size() -> u64 {
-        return 8+4+4+4+4+8+8+1;
+        return 8+32+4+4+4+4+8+8+1;
     }
 }

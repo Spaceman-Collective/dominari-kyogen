@@ -481,7 +481,6 @@ pub struct CloseEntity<'info>{
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
-    pub map: Box<Account<'info, Entity>>,
     #[account(mut)]
     pub entity: Box<Account<'info, Entity>>,
 }

@@ -793,6 +793,7 @@ impl Kyogen {
             SEEDS_ACTIONBUNDLEREGISTRATION,
             config.to_bytes().as_ref(),
         ], &self.registry_id).0;
+
         let ix = Instruction {
             program_id: self.kyogen_id,
             accounts: kyogen::accounts::AttackUnit {
@@ -811,6 +812,54 @@ impl Kyogen {
                 map
             }.to_account_metas(None),
             data: kyogen::instruction::AttackUnit {}.data()
+        };
+        to_value(&ix).unwrap()
+    }
+
+    // Close Entity
+    pub fn close_entity(&self, instance:u64, entity_id:u64) -> JsValue {
+        let receiver = self.payer;
+
+        // CoreDS
+        let coreds = self.core_id;
+        let registry_instance = Pubkey::find_program_address(&[
+            SEEDS_REGISTRYINSTANCE_PREFIX,
+            self.registry_id.to_bytes().as_ref(),
+            instance.to_be_bytes().as_ref(),
+        ], &self.core_id).0;
+
+        let entity = get_key_from_id(&self.core_id, &registry_instance, entity_id);
+
+        // Action Bundle
+        let kyogen_config = Kyogen::get_kyogen_signer(&self.kyogen_id);
+        let kyogen_index = Pubkey::find_program_address(&[
+            SEEDS_INSTANCEINDEX,
+            registry_instance.to_bytes().as_ref(),
+        ], &self.kyogen_id).0;
+
+        // Registry
+        let registry_config = Registry::get_registry_signer(&self.registry_id);
+        let registry_program = self.registry_id;
+        let kyogen_registration = Pubkey::find_program_address(&[
+            SEEDS_ACTIONBUNDLEREGISTRATION,
+            kyogen_config.to_bytes().as_ref(),
+        ], &self.registry_id).0;
+
+        let ix = Instruction {
+            program_id: self.kyogen_id,
+            accounts: kyogen::accounts::CloseEntity {
+                receiver,
+                system_program,
+                kyogen_config, 
+                kyogen_index,
+                registry_config,
+                registry_program,
+                kyogen_registration,
+                registry_instance,
+                coreds,
+                entity
+            }.to_account_metas(None),
+            data: kyogen::instruction::CloseEntity {}.data()
         };
         to_value(&ix).unwrap()
     }

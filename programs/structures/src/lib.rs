@@ -53,6 +53,7 @@ pub mod structures {
 
         registry::cpi::append_registry_index(append_ctx)?;
         ctx.accounts.structures_index.instance = instance;
+        ctx.accounts.structures_index.authority = ctx.accounts.payer.key();
         Ok(())
     }
 
@@ -713,6 +714,40 @@ pub mod structures {
         });
 
         Ok(())
+    }
+
+    pub fn close_structure(ctx:Context<CloseStructure>) -> Result<()> {
+        let structures_ref = &ctx.accounts.structures_config.components;
+        let entity = &ctx.accounts.entity;
+
+        let system_signer_seeds:&[&[u8]] = &[
+            SEEDS_STRUCTURESSIGNER,
+            &[*ctx.bumps.get("structures_config").unwrap()]
+        ];
+        let signer_seeds = &[system_signer_seeds];
+        let close_entity_ctx = CpiContext::new_with_signer(
+            ctx.accounts.registry_program.to_account_info(),            
+            registry::cpi::accounts::RemoveEntity {
+                benefactor: ctx.accounts.receiver.to_account_info(),
+                system_program: ctx.accounts.system_program.to_account_info(),
+                entity: ctx.accounts.entity.to_account_info(),
+                registry_config: ctx.accounts.registry_config.to_account_info(),
+                action_bundle: ctx.accounts.structures_config.to_account_info(),
+                action_bundle_registration: ctx.accounts.structures_registration.to_account_info(),
+                core_ds: ctx.accounts.coreds.to_account_info(),                
+            }, 
+            signer_seeds
+        );
+
+        let structure_sc = entity.components.get(&structures_ref.structure);
+        if structure_sc.is_some() {
+            // Context takes care of that only the structure instance authority can call this function
+            // So only SIA can close structures, we can just go ahead and do it
+            registry::cpi::req_remove_entity(close_entity_ctx)?;
+            return Ok(());
+        }
+
+        return err!(StructureError::NotAStructure);
     }
 }
 
