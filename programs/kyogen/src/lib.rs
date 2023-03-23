@@ -95,7 +95,7 @@ pub mod kyogen {
         //ctx.accounts.instance_index.play_phase = new_game_state.clone();
         let kyogen_ref = &ctx.accounts.config.components;
         let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
-        let mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
+        let mut mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
         
         let config_seeds:&[&[u8]] = &[
             SEEDS_KYOGENSIGNER,
@@ -113,6 +113,8 @@ pub mod kyogen {
             },
             signer_seeds
         );
+        
+        mapmeta.game_status = new_game_state.clone();
         
         registry::cpi::req_modify_component(
             modify_gamestate_ctx,
