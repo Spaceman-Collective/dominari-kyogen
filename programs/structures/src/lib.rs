@@ -24,7 +24,7 @@ use component::*;
 use error::*;
 use event::*;
 
-declare_id!("4Bo4cgr4RhGpXJsQUV4KENCf3HJwPveFsPELJGGN9GkR");
+declare_id!("9MMTJ6xda4hBLDkmH328S6XuW39mKyjTEg2aqpnfc6xk");
 
 #[program]
 pub mod structures {

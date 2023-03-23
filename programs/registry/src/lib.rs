@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use std::collections::{BTreeSet, BTreeMap};
 use core_ds::state::SerializedComponent;
 
-declare_id!("7Vpu3mY18uA2iWBhAyKc72F9xs1SaMByV5KaPpuLhFQz");
+declare_id!("FqATVPaCvgi5jGbNeoG2sPd4bb9NoyirK2LjVSgErjJ7");
 
 pub mod account;
 pub mod context;
