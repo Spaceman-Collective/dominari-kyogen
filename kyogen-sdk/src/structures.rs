@@ -462,7 +462,7 @@ impl Structures {
         // Structures
         let structures_index = Pubkey::find_program_address(&[
             SEEDS_PREFIXINDEX,
-            instance.to_be_bytes().as_ref(),
+            registry_instance.to_bytes().as_ref(),
         ], &self.structures_id).0;
         let structures_registration = Pubkey::find_program_address(&[
             SEEDS_ACTIONBUNDLEREGISTRATION,
