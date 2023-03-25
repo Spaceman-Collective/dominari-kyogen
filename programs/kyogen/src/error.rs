@@ -5,67 +5,67 @@ use anchor_lang::prelude::*;
 #[error_code]
 pub enum KyogenError {
     #[msg("")]
-    PlayerCountExceeded,
+    PlayerCountExceeded, // 6000
 
     #[msg("")]
-    StringTooLong,
+    StringTooLong, // 6001
 
     #[msg("")]
-    WrongPack,
+    WrongPack, // 6002
 
     #[msg("")]
-    WrongTile,
+    WrongTile, // 6003
 
     #[msg("")]
-    TileOccupied,
+    TileOccupied, // 6004
 
     #[msg("")]
-    TileIsNotEmpty,
+    TileIsNotEmpty, // 6005
 
     #[msg("")]
-    NoOccupantOnTile,
+    NoOccupantOnTile, // 6006
 
     #[msg("")]
-    PlayerDoesntOwnUnit,
+    PlayerDoesntOwnUnit, // 6007
 
     #[msg("")]
-    AttackingSelfOwnedUnit,
+    AttackingSelfOwnedUnit, // 6008
 
     #[msg("")]
-    TileIsNotSpawnable,
+    TileIsNotSpawnable, // 6009
 
     #[msg("")]
-    TileAlreadyClaimed,
+    TileAlreadyClaimed, // 6010
 
     #[msg("")]
-    TileOutOfRange,
+    TileOutOfRange, // 6011
 
     #[msg("")]
-    WrongUnit,
+    WrongUnit, // 6012
 
     #[msg("")]
-    WrongPlayer,
+    WrongPlayer, // 6013
 
     #[msg("")]
-    GamePaused,
+    GamePaused, // 6014
 
     #[msg("")]
-    UnitRecovering,
+    UnitRecovering, // 6015
 
     #[msg("")]
-    UnitNotActive,
+    UnitNotActive, // 6016
 
     #[msg("")]
-    EntityCannotBeClosedByThisProgram,
+    EntityCannotBeClosedByThisProgram, // 6017
 
     #[msg("")]
-    PlayerCanOnlyBeClosedByOwner,
+    PlayerCanOnlyBeClosedByOwner, // 6018
 
     #[msg("")]
-    UnitCanOnlyBeClosedByOwner,
+    UnitCanOnlyBeClosedByOwner, // 6019
 
     #[msg("")]
-    TileCanOnlyBeClosedByInstanceAuthority,
+    TileCanOnlyBeClosedByInstanceAuthority, // 6020
 
     
 }
