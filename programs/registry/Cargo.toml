@@ -18,5 +18,5 @@ default = []
 [dependencies]
 anchor-lang = "0.26.0"
 anchor-spl = "0.26.0"
-core_ds = { git="https://github.com/JumpCrypto/sol-arc", features=["cpi"], branch="main" }
+core_ds = { path ="../core-ds", features=["cpi"] }
 solana-program = "=1.14.11"

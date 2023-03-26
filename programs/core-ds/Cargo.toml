@@ -1,12 +1,12 @@
 [package]
-name = "kyogen"
+name = "core_ds"
 version = "0.1.0"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "kyogen"
+name = "core_ds"
 
 [features]
 no-entrypoint = []
@@ -18,8 +18,6 @@ sdk = ["dep:serde"]
 
 [dependencies]
 anchor-lang = "0.26.0"
-core_ds = { path ="../core-ds", features=["cpi"] }
-registry = { path = "../registry", features = ["cpi"]}
+anchor-spl = "0.26.0"
 serde = { version = "1.0.147", optional=true }
 solana-program = "=1.14.11"
-anchor-spl = "0.26.0"

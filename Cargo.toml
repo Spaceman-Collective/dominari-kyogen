@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "programs/*",
-    "kyogen-sdk"
+    "kyogen-sdk",
 ]
 
 [profile.release]

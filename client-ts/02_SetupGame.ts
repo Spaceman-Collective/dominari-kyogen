@@ -15,7 +15,7 @@ const programs = {
     STRUCTURES: new anchor.web3.PublicKey(process.env.STRUCTURES_ID)
 }
 const ADMIN_KEY = anchor.web3.Keypair.fromSecretKey(Buffer.from(JSON.parse(readFileSync(process.env.PRIVATE_KEY_PATH).toString())));
-const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'processed');
+const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'confirmed');
 const registry = new sdk.Registry(
     programs.COREDS.toString(),
     programs.REGISTRY.toString(),

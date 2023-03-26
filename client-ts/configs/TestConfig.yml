@@ -34,8 +34,12 @@ structures:
   - 
     x: 1
     y: 1
-    structure_blueprint: "Healer"
+    structure_blueprint: "Meteor"
   - 
-    x: 2
-    y: 2
-    structure_blueprint: "Portal"
+    x: 4
+    y: 4
+    structure_blueprint: "Meteor"
+  - 
+    x: 6
+    y: 6
+    structure_blueprint: "Meteor"
