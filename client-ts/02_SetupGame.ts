@@ -36,7 +36,8 @@ const structures = new sdk.Structures(
 );
 
 
-let config = YAML.parse(readFileSync('./configs/TestConfig.yml', {encoding: "utf-8"}));
+//let config = YAML.parse(readFileSync('./configs/TestConfig.yml', {encoding: "utf-8"}));
+let config = JSON.parse(readFileSync('1679800716047-Config.json', {encoding: "utf-8"}));
 
 main();
 async function main(){
