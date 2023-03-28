@@ -1,15 +1,20 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 dotenv.config({ path: `.env.local`, override: true });
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 
-const MAX_X = 20;
-const MAX_Y = 20;
+const MAX_X = 15;
+const MAX_Y = 15;
+const MAX_PLAYERS = 12;
+const SPAWN_POINT_RATE = 0.03; // Per spawn; so if this is 0.05, it's 5% chance of Ancients, 5% for wildings, etc
+const METEOR_COUNT = 12;
 
 main();
+configChecker(`configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}.json`);
+
 function main(){
     let config = {
-        max_players: 32,
+        max_players: MAX_PLAYERS,
         game_token: "replace",
         spawn_claim_multiplier: 1.1,
         tokens_minted: 50000,
@@ -20,10 +25,12 @@ function main(){
             max_y: MAX_Y,
         },
 
-        spawns: []
+        spawns: [],
+        structures: []
     }
-    let grid = generateGrid(20, 20);
-    //console.log(grid);
+
+    // Spawns
+    let grid = generateGrid(MAX_X, MAX_Y);
     for(let row=0; row<grid.length; row++){
         for(let col=0; col<grid[row].length; col++){
             if(grid[row][col] == "Ancient") {
@@ -57,28 +64,33 @@ function main(){
             }
         } 
     }
-    writeFileSync(`configs/${Date.now()}-Config.json`, JSON.stringify(config,null,2));
-}
 
-function findIndexOfSmallest(numbers: number[]): number {
-    let smallestIndex = 0;
-    let smallestValue = numbers[0];
+    // Meteors
+    for(let i=0; i<METEOR_COUNT; i++){
+        let wannabe_x = Math.floor(Math.random()*MAX_X);
+        let wannabe_y = Math.floor(Math.random()*MAX_Y);
 
-    for (let i = 1; i < numbers.length; i++) {
-        if (numbers[i] < smallestValue) {
-            smallestValue = numbers[i];
-            smallestIndex = i;
+        // Check if spawn exists on those coordinates
+        while(config.spawns.find((spawn)=> {spawn.x == wannabe_x && spawn.y == wannabe_y})){
+            wannabe_x = Math.floor(Math.random()*MAX_X);
+            wannabe_y = Math.floor(Math.random()*MAX_Y);        
         }
+        
+        config.structures.push({
+            x: wannabe_x,
+            y: wannabe_y,
+            structure_blueprint: "Meteor"
+        })
     }
 
-    return smallestIndex;
+    writeFileSync(`configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}.json`, JSON.stringify(config,null,2));
 }
 
 type Spawn = 'Ancient' | 'Creeper' | 'Wilding' | 'Synth' | 'Empty';
 
 function generateGrid(rows: number, columns: number): Spawn[][] {
     const grid: Spawn[][] = [];
-    const totalSpawns = 25;
+    const totalSpawns = Math.floor((rows*columns)*SPAWN_POINT_RATE); // 10% of the Map should be spawns
     const spawnTypes: Spawn[] = ['Ancient', 'Creeper', 'Wilding', 'Synth'];
     const spawnCounts: Map<Spawn, number> = new Map();
     let remainingSpawns = totalSpawns * spawnTypes.length;
@@ -108,50 +120,13 @@ function generateGrid(rows: number, columns: number): Spawn[][] {
     return grid;
 }
 
-const rows = 20;
-const columns = 20;
-const grid = generateGrid(rows, columns);
 
-
-
-/*
-    // Equally distrbute spawns
-    let distance_between_spawns = Math.floor((MAX_X*MAX_Y) / 4);
-    let distance_since_last_spawn=distance_between_spawns; //first tile should be a spawn
-    let spawns = [];
-    let spawns_indexes = [0, 0, 0, 0]; // A W C S
-
-    for(let x=0; x<MAX_X; x++){
-        for(let y=0; y<MAX_Y; y++){
-            if(distance_since_last_spawn >= distance_between_spawns) {
-                // Spawn Something
-                let fewest_spawns = findIndexOfSmallest(spawns_indexes);
-                let clan = "";
-                switch (fewest_spawns) {
-                    case 0: 
-                        clan = "Ancients"
-                        break;
-                    case 1:
-                        clan = "Wildings"
-                        break;
-                    case 2:
-                        clan = "Creepers"
-                        break;
-                    case 4: 
-                        clan = "Synths"
-                        break;
-                }
-
-                spawns.push({
-                    x,
-                    y,
-                    cost: 10,
-                    clan
-                })
-                distance_since_last_spawn =0;
-            } else {
-                distance_since_last_spawn +=1;
-            }
-        }
-    }
-*/
+function configChecker(configName) {
+    const CONFIG = JSON.parse(readFileSync(configName, {encoding:"utf-8"}));
+    console.log("Spawns: ", CONFIG.spawns.length);
+    console.log("\tAncients: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Ancients").length)
+    console.log("\tWildings: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Wildings").length)
+    console.log("\tCreepers: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Creepers").length)
+    console.log("\tSynths: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Synths").length)
+    console.log("Meteors:", CONFIG.structures.length);        
+}

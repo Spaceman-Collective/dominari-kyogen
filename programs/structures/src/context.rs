@@ -346,6 +346,7 @@ pub struct ClaimVictory<'info> {
     pub coreds: Program<'info, CoreDs>, 
     pub registry_instance: Account<'info, RegistryInstance>,
 
+    #[account(mut)]
     pub map: Box<Account<'info, Entity>>,
     pub player: Box<Account<'info, Entity>>, 
 }
