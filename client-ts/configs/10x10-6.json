@@ -1,0 +1,165 @@
+{
+  "max_players": 6,
+  "game_token": "replace",
+  "spawn_claim_multiplier": 1.1,
+  "tokens_minted": 50000,
+  "max_score": 5000,
+  "mapmeta": {
+    "max_x": 10,
+    "max_y": 10
+  },
+  "spawns": [
+    {
+      "x": 3,
+      "y": 1,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 5,
+      "y": 4,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 8,
+      "y": 4,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 9,
+      "y": 4,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 5,
+      "y": 5,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 4,
+      "y": 6,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 6,
+      "y": 6,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 9,
+      "y": 6,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 8,
+      "y": 7,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 9,
+      "y": 8,
+      "cost": 10,
+      "clan": "Wildings"
+    }
+  ],
+  "structures": [
+    {
+      "x": 2,
+      "y": 4,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 4,
+      "y": 9,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 2,
+      "y": 8,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 2,
+      "y": 9,
+      "structure_blueprint": "Meteor"
+    }
+  ]
+}

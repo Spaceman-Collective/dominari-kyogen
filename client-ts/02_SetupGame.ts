@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 dotenv.config({ path: `.env.local`, override: true });
 import * as anchor from '@coral-xyz/anchor';
-import {readFileSync} from 'fs';
+import {readFileSync, writeFileSync} from 'fs';
 import * as sdk from '../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
 import { ixWasmToJs, ixPack, randomU64 } from './util';
 import YAML from 'yaml';
@@ -15,7 +15,7 @@ const programs = {
     STRUCTURES: new anchor.web3.PublicKey(process.env.STRUCTURES_ID)
 }
 const ADMIN_KEY = anchor.web3.Keypair.fromSecretKey(Buffer.from(JSON.parse(readFileSync(process.env.PRIVATE_KEY_PATH).toString())));
-const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'processed');
+const CONNECTION = new anchor.web3.Connection(process.env.CONNECTION_URL, 'confirmed');
 const registry = new sdk.Registry(
     programs.COREDS.toString(),
     programs.REGISTRY.toString(),
@@ -35,11 +35,19 @@ const structures = new sdk.Structures(
     ADMIN_KEY.publicKey.toString()
 );
 
-
-let config = YAML.parse(readFileSync('./configs/TestConfig.yml', {encoding: "utf-8"}));
+const CONFIG_FILE = "configs/TestConfig.yml";
+let config:any;
+//let config = YAML.parse(readFileSync('./configs/TestConfig.yml', {encoding: "utf-8"}));
+if (CONFIG_FILE.includes(".yml")) {
+    config = YAML.parse(readFileSync(CONFIG_FILE, {encoding: "utf-8"}));
+} else {
+    config = JSON.parse(readFileSync(CONFIG_FILE, {encoding: "utf-8"}));
+}
 
 main();
 async function main(){
+    const STARTING_BALANCE = await CONNECTION.getBalance(ADMIN_KEY.publicKey);
+
     // Assume 01_InitProgram.ts has been run
 
     // Create SPL Mint per game
@@ -68,6 +76,11 @@ async function main(){
 
     // TODO: Init Structures
     await init_structures(instance);
+
+    const ENDING_BALANCE = await CONNECTION.getBalance(ADMIN_KEY.publicKey);
+    const SOL_COST = (STARTING_BALANCE - ENDING_BALANCE)/anchor.web3.LAMPORTS_PER_SOL;
+    console.log(`${CONFIG_FILE} took ${SOL_COST} SOL to deploy.`);
+    writeFileSync(`instances/${CONFIG_FILE.split(".")[0].split("configs/")[1]}-${instance}.txt`, SOL_COST.toString());
 }
 
 async function create_game_instance(): Promise<bigint> {

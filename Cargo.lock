@@ -639,10 +639,10 @@ checksum = "5827cebf4670468b8772dd191856768aedcb1b0278a04f989f7766351917b9dc"
 [[package]]
 name = "core_ds"
 version = "0.1.0"
-source = "git+https://github.com/JumpCrypto/sol-arc?branch=main#df0191a90bce5848ebd6d92dde0c720a33cbdb3d"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "serde",
  "solana-program",
 ]
 

@@ -1,10 +1,18 @@
 [features]
 seeds = false
 skip-lint = false
+
 [programs.localnet]
 registry = "7Vpu3mY18uA2iWBhAyKc72F9xs1SaMByV5KaPpuLhFQz"
 kyogen = "CTQCiB97LrAjAtHy1eqGwqGiy2mjefBXR762nrDhWYTL"
 structures = "4Bo4cgr4RhGpXJsQUV4KENCf3HJwPveFsPELJGGN9GkR"
+core = "GN5Ww5qa8ej4evFCJxMhV6AFEPKhD1Drdu8qYYptVgDJ"
+
+[programs.devnet]
+registry = "FqATVPaCvgi5jGbNeoG2sPd4bb9NoyirK2LjVSgErjJ7"
+kyogen = "3no6yedMWm6Ru5fLCYnbhExEFMUetsAjWJrqYoykAV24"
+structures = "9MMTJ6xda4hBLDkmH328S6XuW39mKyjTEg2aqpnfc6xk"
+core = "EVzNjnCa1w3Nd1m2TVNiKM7HLnbH8A1JdJzoF99EehrX"
 
 [registry]
 url = "https://api.apr.dev"
