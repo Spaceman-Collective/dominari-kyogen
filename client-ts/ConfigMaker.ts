@@ -3,11 +3,11 @@ dotenv.config();
 dotenv.config({ path: `.env.local`, override: true });
 import { readFileSync, writeFileSync } from "fs";
 
-const MAX_X = 15;
-const MAX_Y = 15;
-const MAX_PLAYERS = 12;
-const SPAWN_POINT_RATE = 0.03; // Per spawn; so if this is 0.05, it's 5% chance of Ancients, 5% for wildings, etc
+const MAX_X = 20;
+const MAX_Y = 20;
+const MAX_PLAYERS = 16;
 const METEOR_COUNT = 12;
+const SPAWN_POINT_RATE = 0.03; // Per spawn; so if this is 0.05, it's 5% chance of Ancients, 5% for wildings, etc
 
 main();
 configChecker(`configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}.json`);
@@ -18,7 +18,7 @@ function main(){
         game_token: "replace",
         spawn_claim_multiplier: 1.1,
         tokens_minted: 50000,
-        max_score: 5000,
+        max_score: 1000,
 
         mapmeta: {
             max_x: MAX_X,
@@ -67,18 +67,18 @@ function main(){
 
     // Meteors
     for(let i=0; i<METEOR_COUNT; i++){
-        let wannabe_x = Math.floor(Math.random()*MAX_X);
-        let wannabe_y = Math.floor(Math.random()*MAX_Y);
+        let mx = Math.floor(Math.random()*MAX_X);
+        let my = Math.floor(Math.random()*MAX_Y);
 
         // Check if spawn exists on those coordinates
-        while(config.spawns.find((spawn)=> {spawn.x == wannabe_x && spawn.y == wannabe_y})){
-            wannabe_x = Math.floor(Math.random()*MAX_X);
-            wannabe_y = Math.floor(Math.random()*MAX_Y);        
+        while(config.spawns.find((s) => s.x === mx && s.y == my)){
+            mx = Math.floor(Math.random()*MAX_X);
+            my = Math.floor(Math.random()*MAX_Y);        
         }
         
         config.structures.push({
-            x: wannabe_x,
-            y: wannabe_y,
+            x: mx,
+            y: my,
             structure_blueprint: "Meteor"
         })
     }
@@ -128,5 +128,11 @@ function configChecker(configName) {
     console.log("\tWildings: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Wildings").length)
     console.log("\tCreepers: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Creepers").length)
     console.log("\tSynths: ", CONFIG.spawns.filter((spawn) => spawn.clan == "Synths").length)
-    console.log("Meteors:", CONFIG.structures.length);        
+    console.log("Meteors:", CONFIG.structures.length);
+    for(let m of CONFIG.structures) {
+        if(CONFIG.spawns.find((s) => s.x === m.x && s.y == m.y)){
+            console.log("Collision Found!")
+            console.log("Meteor: ", m);
+        }
+    }        
 }

@@ -7,6 +7,7 @@ import * as sdk from '../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
 import { ixWasmToJs, ixPack, randomU64 } from './util';
 import YAML from 'yaml';
 import * as spl from '@solana/spl-token';
+import { exit } from 'process';
 
 const programs = {
     COREDS: new anchor.web3.PublicKey(process.env.COREDS_ID),
@@ -35,7 +36,9 @@ const structures = new sdk.Structures(
     ADMIN_KEY.publicKey.toString()
 );
 
-const CONFIG_FILE = "configs/TestConfig.yml";
+
+const CONFIG_FILE = process.argv[2];
+console.log("Using config: ", CONFIG_FILE);
 let config:any;
 //let config = YAML.parse(readFileSync('./configs/TestConfig.yml', {encoding: "utf-8"}));
 if (CONFIG_FILE.includes(".yml")) {
