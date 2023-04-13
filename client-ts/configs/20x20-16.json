@@ -1,0 +1,363 @@
+{
+  "max_players": 16,
+  "game_token": "replace",
+  "spawn_claim_multiplier": 1.1,
+  "tokens_minted": 50000,
+  "max_score": 3000,
+  "mapmeta": {
+    "max_x": 20,
+    "max_y": 20
+  },
+  "spawns": [
+    {
+      "x": 5,
+      "y": 1,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 16,
+      "y": 1,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 19,
+      "y": 1,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 0,
+      "y": 2,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 9,
+      "y": 3,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 12,
+      "y": 3,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 14,
+      "y": 3,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 15,
+      "y": 3,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 19,
+      "y": 3,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 7,
+      "y": 4,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 13,
+      "y": 4,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 16,
+      "y": 5,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 17,
+      "y": 5,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 8,
+      "y": 6,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 17,
+      "y": 6,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 18,
+      "y": 6,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 19,
+      "y": 6,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 19,
+      "y": 7,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 16,
+      "y": 8,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 11,
+      "y": 9,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 12,
+      "y": 9,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 2,
+      "y": 10,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 18,
+      "y": 10,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 19,
+      "y": 10,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 6,
+      "y": 11,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 12,
+      "y": 11,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 0,
+      "y": 12,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 1,
+      "y": 12,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 10,
+      "y": 12,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 6,
+      "y": 13,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 12,
+      "y": 13,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 18,
+      "y": 13,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 4,
+      "y": 15,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 8,
+      "y": 15,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 7,
+      "y": 16,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 12,
+      "y": 17,
+      "cost": 10,
+      "clan": "Ancients"
+    },
+    {
+      "x": 13,
+      "y": 17,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 5,
+      "y": 18,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 7,
+      "y": 18,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 14,
+      "y": 18,
+      "cost": 10,
+      "clan": "Wildings"
+    },
+    {
+      "x": 6,
+      "y": 19,
+      "cost": 10,
+      "clan": "Synths"
+    },
+    {
+      "x": 10,
+      "y": 19,
+      "cost": 10,
+      "clan": "Creepers"
+    },
+    {
+      "x": 12,
+      "y": 19,
+      "cost": 10,
+      "clan": "Synths"
+    }
+  ],
+  "structures": [
+    {
+      "x": 2,
+      "y": 5,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 12,
+      "y": 0,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 13,
+      "y": 0,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 12,
+      "y": 2,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 18,
+      "y": 2,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 10,
+      "y": 0,
+      "structure_blueprint": "Meteor"
+    },
+    {
+      "x": 11,
+      "y": 16,
+      "structure_blueprint": "Meteor"
+    }
+  ]
+}

@@ -18,6 +18,8 @@
     },
     "private": true,
     "workspaces": [
-        "admin"
+        "admin",
+        "setup",
+        "server"
     ]
 }
