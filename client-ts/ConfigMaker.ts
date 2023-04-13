@@ -3,22 +3,25 @@ dotenv.config();
 dotenv.config({ path: `.env.local`, override: true });
 import { readFileSync, writeFileSync } from "fs";
 
-const MAX_X = 20;
-const MAX_Y = 20;
-const MAX_PLAYERS = 16;
-const METEOR_COUNT = 12;
+const MAX_X = 10;
+const MAX_Y = 10;
+const MAX_PLAYERS = 6;
+const METEOR_COUNT = 3;
 const SPAWN_POINT_RATE = 0.03; // Per spawn; so if this is 0.05, it's 5% chance of Ancients, 5% for wildings, etc
+const fileName = `configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}-${Date.now()}.json`;
+const MAX_SCORE = 4000;
+
 
 main();
-configChecker(`configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}.json`);
+configChecker(fileName);
 
 function main(){
     let config = {
         max_players: MAX_PLAYERS,
         game_token: "replace",
         spawn_claim_multiplier: 1.1,
-        tokens_minted: 50000,
-        max_score: 1000,
+        tokens_minted: 500000,
+        max_score: MAX_SCORE,
 
         mapmeta: {
             max_x: MAX_X,
@@ -83,7 +86,7 @@ function main(){
         })
     }
 
-    writeFileSync(`configs/${MAX_X}x${MAX_Y}-${MAX_PLAYERS}.json`, JSON.stringify(config,null,2));
+    writeFileSync(fileName, JSON.stringify(config,null,2));
 }
 
 type Spawn = 'Ancient' | 'Creeper' | 'Wilding' | 'Synth' | 'Empty';

@@ -3,7 +3,7 @@
   "game_token": "replace",
   "spawn_claim_multiplier": 1.1,
   "tokens_minted": 50000,
-  "max_score": 1000,
+  "max_score": 2000,
   "mapmeta": {
     "max_x": 15,
     "max_y": 15
