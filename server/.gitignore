@@ -1,0 +1,5 @@
+.env
+src/cert.pem
+src/key.pem
+src/decrypted_key.pem
+src/test.ts

@@ -80,10 +80,10 @@ impl GameState {
         let mapmeta = &self.get_mapmeta(&self.kyogen_index.as_ref().unwrap().map).unwrap();
 
         match mapmeta.game_status {
-            PlayPhase::Lobby => return "Lobby".to_string(),
-            PlayPhase::Play => return "Play".to_string(),
-            PlayPhase::Paused => return "Paused".to_string(),
-            PlayPhase::Finished => return "Finished".to_string(),
+            PlayPhase::Lobby => "Lobby".to_string(),
+            PlayPhase::Play => "Play".to_string(),
+            PlayPhase::Paused => "Paused".to_string(),
+            PlayPhase::Finished => "Finished".to_string(),
         }
     }
 
@@ -125,7 +125,7 @@ impl GameState {
         let structures_index:StructureIndex = fetch_account(&self.client, &structures_index).await.unwrap();
 
         self.kyogen_index = Some(index.clone());
-        self.structures_index = Some(structures_index.clone());
+        self.structures_index = Some(structures_index);
     }
 
     pub async fn load_state(&mut self) {
@@ -137,7 +137,7 @@ impl GameState {
             self.kyogen_index.as_ref().unwrap().map,
             fetch_accounts::<Entity>(
                 &self.client,
-                &vec![get_key_from_id(
+                &[get_key_from_id(
                     &self.coreds_id,
                     &registry_instance,
                     self.kyogen_index.as_ref().unwrap().map
@@ -149,10 +149,10 @@ impl GameState {
                                                                             .clone()
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -167,10 +167,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -184,10 +184,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -201,10 +201,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -218,10 +218,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -235,10 +235,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -252,10 +252,10 @@ impl GameState {
                                                                             .clone()   
                                                                             .iter()
                                                                             .map(|id| {
-                                                                                return get_key_from_id(
+                                                                                get_key_from_id(
                                                                                     &self.coreds_id,
                                                                                     &registry_instance,
-                                                                                    id.clone()
+                                                                                    *id
                                                                                 )
                                                                             })
                                                                             .collect();
@@ -335,15 +335,15 @@ impl GameState {
     }
 
     pub  fn get_tile_json(&self, tile_id:u64) -> JsValue {
-        return serde_wasm_bindgen::to_value(&self.get_tile_info(tile_id)).unwrap()
+        serde_wasm_bindgen::to_value(&self.get_tile_info(tile_id)).unwrap()
     }
 
     pub fn get_structure_json(&self, structure_id:u64) -> JsValue {
-        return serde_wasm_bindgen::to_value(&self.get_structure_info(structure_id)).unwrap()
+        serde_wasm_bindgen::to_value(&self.get_structure_info(structure_id)).unwrap()
     }
 
     pub fn get_troop_json(&self, troop_id:u64) -> JsValue {
-        return serde_wasm_bindgen::to_value(&self.get_troop_info(troop_id)).unwrap()
+        serde_wasm_bindgen::to_value(&self.get_troop_info(troop_id)).unwrap()
     }
 
     pub fn get_map(&self) -> JsValue {
@@ -401,7 +401,7 @@ impl GameState {
 
     pub fn get_player_json(&self, player_id:u64) -> JsValue {
         let player = self.get_player_info(player_id);
-        return serde_wasm_bindgen::to_value(&player).unwrap();
+        serde_wasm_bindgen::to_value(&player).unwrap()
     }
 
     pub fn get_playerjson_by_key(&self, player_key:String) -> JsValue {
@@ -412,7 +412,7 @@ impl GameState {
             }
         };
 
-        return serde_wasm_bindgen::to_value(&{}).unwrap();
+        serde_wasm_bindgen::to_value(&{}).unwrap()
     }
 }
 
@@ -499,7 +499,7 @@ impl GameState {
             owner: player_stats.key.to_string(),
             solarite: player_stats.solarite.to_string(),
             score: player_stats.score.to_string(),
-            cards: player_stats.cards.iter().map(|key| {return key.to_string()}).collect(),
+            cards: player_stats.cards.iter().map(|key| {key.to_string()}).collect(),
             clan: player_stats.clan,
         }
     }
@@ -512,126 +512,126 @@ impl GameState {
 
     /*** Kyogen Component Getters ***/
     pub fn get_metadata(&self, id:&u64) -> Option<ComponentMetadata> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().metadata.key());
-        if sc.is_none() { return None };
-        Some(ComponentMetadata::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentMetadata::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_mapmeta(&self, id:&u64) -> Option<ComponentMapMeta> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
-        let sc = serialized_components.get(&&self.component_index.get_kyogen_relevant_keys().mapmeta.key());
-        if sc.is_none() { return None };
-        Some(ComponentMapMeta::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        let serialized_components = &self.entities.get(id).unwrap().components;
+        let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().mapmeta.key());
+        sc?;
+        Some(ComponentMapMeta::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_location(&self, id:&u64) -> Option<ComponentLocation> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().location.key());
-        if sc.is_none() { return None };
-        Some(ComponentLocation::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentLocation::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_spawn(&self, id:&u64) -> Option<ComponentSpawn> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().spawn.key());
-        if sc.is_none() { return None };
-        Some(ComponentSpawn::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentSpawn::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_occupant(&self, id:&u64) -> Option<ComponentOccupant> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().occupant.key());
-        if sc.is_none() { return None };
-        Some(ComponentOccupant::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentOccupant::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_player_stats(&self, id:&u64) -> Option<ComponentPlayerStats> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().player_stats.key());
-        if sc.is_none() { return None };
-        Some(ComponentPlayerStats::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentPlayerStats::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_owner(&self, id:&u64) -> Option<ComponentOwner> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().owner.key());
-        if sc.is_none() { return None };
-        Some(ComponentOwner::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentOwner::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_last_used(&self, id:&u64) -> Option<ComponentLastUsed> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().last_used.key());
-        if sc.is_none() { return None };
-        Some(ComponentLastUsed::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentLastUsed::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_range(&self, id:&u64) -> Option<ComponentRange> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().range.key());
-        if sc.is_none() { return None };
-        Some(ComponentRange::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentRange::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_health(&self, id:&u64) -> Option<ComponentHealth> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().health.key());
-        if sc.is_none() { return None };
-        Some(ComponentHealth::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentHealth::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_damage(&self, id:&u64) -> Option<ComponentDamage> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().damage.key());
-        if sc.is_none() { return None };
-        Some(ComponentDamage::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentDamage::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_troop_class(&self, id:&u64) -> Option<ComponentTroopClass> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().troop_class.key());
-        if sc.is_none() { return None };
-        Some(ComponentTroopClass::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentTroopClass::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_active(&self, id:&u64) -> Option<ComponentActive> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().active.key());
-        if sc.is_none() { return None };
-        Some(ComponentActive::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentActive::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_image(&self, id:&u64) -> Option<ComponentImage> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_kyogen_relevant_keys().image.key());
-        if sc.is_none() { return None };
-        Some(ComponentImage::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentImage::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     /*** Structure Component Getters ***/
 
     pub fn get_structure(&self, id:&u64) -> Option<ComponentStructure> {
-        let serialized_components = &self.entities.get(&id).unwrap().components;
+        let serialized_components = &self.entities.get(id).unwrap().components;
         let sc = serialized_components.get(&self.component_index.get_structures_relevant_keys().structure.key());
-        if sc.is_none() { return None };
-        Some(ComponentStructure::try_from_slice(&sc.unwrap().data.as_slice()).unwrap())
+        sc?;
+        Some(ComponentStructure::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
 
 }
 
 pub async fn fetch_account<T: AccountDeserialize>(client: &WasmClient, pubkey: &Pubkey) -> Result<T> {
-    let mut data:&[u8] = &client.get_account(pubkey).await.unwrap().data;
-    let result: Result<T> = deserialize_account(&mut data).await;
-    return result;
+    let data:&[u8] = &client.get_account(pubkey).await.unwrap().data;
+    let result: Result<T> = deserialize_account(data).await;
+    result
 }
 
 /**
  * Makes the assumption that the accounts returned are in the same order as the keys passed in
  * This is because the accounts returned don't have the pubkey attached to them.
  */
-pub async fn fetch_accounts<T: AccountDeserialize>(client: &WasmClient, pubkeys: &Vec<Pubkey>) -> Vec<(Pubkey,T)> {
+pub async fn fetch_accounts<T: AccountDeserialize>(client: &WasmClient, pubkeys: &[Pubkey]) -> Vec<(Pubkey,T)> {
     let chunks: Vec<Vec<Pubkey>> = pubkeys.chunks(99).map(|p| p.into()).collect();
     let mut accounts: Vec<std::option::Option<solana_client_wasm::solana_sdk::account::Account>> = vec![];
     for chunk in chunks {
@@ -642,16 +642,15 @@ pub async fn fetch_accounts<T: AccountDeserialize>(client: &WasmClient, pubkeys:
     let mut results = vec![];
     for (i, account) in accounts.iter().enumerate() {
         let result: Result<T> = deserialize_account(&account.as_ref().unwrap().data).await;
-        results.push((pubkeys.get(i).unwrap().clone(), result.unwrap()));
+        results.push((*pubkeys.get(i).unwrap(), result.unwrap()));
     }
-    return results;
+    results
 }
 
-pub async fn get_accounts(client: &WasmClient, pubkeys: &Vec<Pubkey>) -> Vec<std::option::Option<solana_client_wasm::solana_sdk::account::Account>> {
+pub async fn get_accounts(client: &WasmClient, pubkeys: &[Pubkey]) -> Vec<std::option::Option<solana_client_wasm::solana_sdk::account::Account>> {
     client.get_multiple_accounts(pubkeys).await.unwrap()
 }
 
 pub async fn deserialize_account<T: AccountDeserialize>(mut data: &[u8]) -> Result<T> {
-    let result = T::try_deserialize(&mut data).map_err(Into::into);
-    return result;
+    T::try_deserialize(&mut data).map_err(Into::into)
 }

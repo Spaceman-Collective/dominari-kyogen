@@ -1,0 +1,15 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.27.0",
+    "@shyft.to/solana-transaction-parser": "git+https://github.com/Shyft-to/solana-tx-parser-public",
+    "@types/node": "^18.15.11",
+    "@types/node-fetch": "^2.6.3",
+    "better-sse": "^0.8.0",
+    "dotenv": "^16.0.3",
+    "fastify": "^4.15.0",
+    "node-fetch": "2"
+  }
+}

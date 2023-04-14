@@ -19,7 +19,7 @@
     "private": true,
     "workspaces": [
         "admin",
-        "setup",
+        "standalone-setup",
         "server"
     ]
 }
