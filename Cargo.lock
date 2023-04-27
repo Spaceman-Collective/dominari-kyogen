@@ -1389,6 +1389,7 @@ name = "kyogen-sdk"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "base64 0.21.0",
  "bimap",
  "console_error_panic_hook",
  "core_ds",

@@ -424,7 +424,7 @@ impl GameState {
         let last_used = self.get_last_used(&id).unwrap();
         let active = self.get_active(&id).unwrap();
         let structure = self.get_structure(&id).unwrap();
-
+   
         StructureJSON { 
             name: metadata.name, 
             id: id.to_string(), 
@@ -503,8 +503,6 @@ impl GameState {
             clan: player_stats.clan,
         }
     }
-
-    //pub fn get_structure_info(&self, id:u64) -> StructureJSON {}
 }
 
 // Component Getters

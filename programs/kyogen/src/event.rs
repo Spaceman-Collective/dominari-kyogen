@@ -19,6 +19,7 @@ pub struct NewPlayer{
 pub struct SpawnClaimed{
     pub instance: u64,
     pub clan: Clans,
+    pub tile: u64,
     pub player: u64,
 }
 

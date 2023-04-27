@@ -21,6 +21,7 @@ import { BorshEventCoder} from "@coral-xyz/anchor";
 import * as KyogenIDL from "../../target/idl/kyogen.json";
 import * as StructuresIDL from "../../target/idl/structures.json";
 import { Transaction } from './TransactionInterface';
+import * as Events from './IEvents';
 
 
 const programs = {
@@ -285,6 +286,12 @@ function setReverseAddressLookup(gameId:string, addrs: AddressListJSON) {
  */
 server.post('/shyft', async (req, res) => {
     try {
+        if(req.headers['x-api-key'] != process.env.SHYFT_KEY) {
+            console.log("Callback headers are invalid.");
+            res.code(400);
+            return;
+        } 
+        
         const txn:Transaction = req.body as Transaction;
 
         // Check to see if txn has already been processed
@@ -323,10 +330,268 @@ server.post('/shyft', async (req, res) => {
                         console.log("Event didn't have instance!");
                     } else {
                         let gameId = BigInt(`0x${gameIdHex}`).toString();
-                        // Don't deserialize the events, just pass them onto clients with accounts
+                        let channel = gameChannels.get(gameId).channel;
+                        // Don't deserialize the accounts, just pass them onto clients with structured json
                         // This way the server has to do less work
-                        //Kyogen Events
-                        //Structures Events
+
+                        if(event.name == "GameStateChanged"){
+                            let newState: Events.EventGameStateChanged = {
+                                instance: gameId,
+                                newState: Object.keys(event.data.newState)[0]
+                            }
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: newState,
+                            }))
+                        } else if (event.name == "NewPlayer") {
+                            let playerId = BigInt(`0x${event.data.playerId}`).toString();
+                            let newPlayer: Events.EventNewPlayer = {
+                                instance: gameId,
+                                player: {
+                                    id: playerId,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                            BigInt(gameId), 
+                                            BigInt(playerId)
+                                        )).data as string,
+                                },
+                                authority: event.data.authority as string,
+                                clan: Object.keys(event.data.clan)[0]
+
+                            };
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: newPlayer
+                            }))
+                        } else if (event.name == "SpawnClaimed") {
+                            let player = BigInt(`0x${event.data.playerId}`).toString();
+                            let tile = BigInt(`0x${event.data.tile}`).toString();
+
+                            let spawnClaimed: Events.EventSpawnClaimed = {
+                                instance: gameId,
+                                clan: Object.keys(event.data.clan)[0],
+                                tile: {
+                                    id: tile,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(tile)
+                                        )).data as string,
+                                },
+                                player
+                            }
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: spawnClaimed
+                            }));
+                        } else if (event.name == "UnitSpawned") {
+                            let tile = BigInt(`0x${event.data.tile}`).toString();
+                            let player = BigInt(`0x${event.data.tile}`).toString();
+                            let unit = BigInt(`0x${event.data.tile}`).toString();;
+
+
+                            let unitSpawned: Events.EventUnitSpawned = {
+                                instance: gameId,
+                                tile: {
+                                    id: tile,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(tile)
+                                    )).data as string
+                                },
+                                player: {
+                                    id: player,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(player)
+                                    )).data as string
+                                },
+                                unit: {
+                                    id: unit,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(unit)
+                                    )).data as string
+                                },
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: unitSpawned
+
+                            }));
+
+                        } else if (event.name == "UnitMoved") {
+                            let unit = BigInt(`0x${event.data.unit}`).toString();
+                            let from = BigInt(`0x${event.data.from}`).toString();
+                            let to = BigInt(`0x${event.data.to}`).toString();;
+
+                            let unitMoved: Events.EventUnitMoved = {
+                                instance: gameId,
+                                unit: {
+                                    id: unit,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(unit)
+                                    )).data as string
+                                },
+                                from: {
+                                    id: from,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(from)
+                                    )).data as string
+                                },
+                                to: {
+                                    id: to,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(to)
+                                    )).data as string
+                                },
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: unitMoved
+
+                            }));
+
+                        } else if (event.name == "UnitAttacked") {
+                            let attacker = BigInt(`0x${event.data.attacker}`).toString();
+                            let defender = BigInt(`0x${event.data.defender}`).toString();
+                            let tile = BigInt(`0x${event.data.tile}`).toString();;
+
+                            let unitAttacked: Events.EventUnitAttacked = {
+                                instance: gameId,
+                                attacker: {
+                                    id: attacker,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(attacker)
+                                    )).data as string
+                                },
+                                defender: {
+                                    id: defender,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(defender)
+                                    )).data as string
+                                },
+                                tile: {
+                                    id: tile,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(tile)
+                                    )).data as string
+                                },
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: unitAttacked
+                            }));
+                        } else if (event.name == "MeteorMined") {
+                            let tile = BigInt(`0x${event.data.tile}`).toString();
+                            let meteor = BigInt(`0x${event.data.meteor}`).toString();
+                            let player = BigInt(`0x${event.data.player}`).toString();;
+
+                            let meteorMined: Events.EventMeteorMined = {
+                                instance: gameId,
+                                meteor: {
+                                    id: meteor,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(meteor)
+                                    )).data as string
+                                },
+                                player: {
+                                    id: player,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(player)
+                                    )).data as string
+                                },
+                                tile,
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: meteorMined
+                            }));
+                        } else if (event.name == "PortalUsed") {
+                            let from = BigInt(`0x${event.data.from}`).toString();
+                            let to = BigInt(`0x${event.data.to}`).toString();
+                            let unit = BigInt(`0x${event.data.unit}`).toString();;
+
+                            let portalUsed: Events.EventPortalUsed = {
+                                instance: gameId,
+                                from: {
+                                    id: from,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(from)
+                                    )).data as string
+                                },
+                                to: {
+                                    id: to,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(to)
+                                    )).data as string
+                                },
+                                unit: {
+                                    id: unit,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(unit)
+                                    )).data as string
+                                },
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: portalUsed
+                            }));  
+                        } else if (event.name == "LootableLooted") {
+                            let tile = BigInt(`0x${event.data.tile}`).toString();
+                            let lootable = BigInt(`0x${event.data.lootable}`).toString();
+                            let player = BigInt(`0x${event.data.player}`).toString();;
+
+                            let lootableUsed: Events.EventLootableLooted = {
+                                instance: gameId,
+                                tile,
+                                lootable: {
+                                    id: lootable,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(lootable)
+                                    )).data as string
+                                },
+                                player: {
+                                    id: player,
+                                    data: txn.accounts.find((acc) => acc.address == sdk.fetch_address_by_id(
+                                        BigInt(gameId), 
+                                        BigInt(player)
+                                    )).data as string
+                                },
+                            };
+
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: lootableUsed
+                            }));  
+
+                        } else if (event.name == "GameFinished") {
+                            let gameFinished: Events.EventGameFinished = {
+                                instance: gameId,
+                                winning_player_id: BigInt(`0x${event.data.winningPlayerId}`).toString(),
+                                winning_player_key: BigInt(`0x${event.data.winningPlayerKey}`).toString(),
+                                high_score: BigInt(`0x${event.data.highScore}`).toString(),
+                            }
+                            channel.broadcast(JSON.stringify({
+                                name: event.name,
+                                data: gameFinished
+                            }))
+                        }                        
                     }
                 }
             }
@@ -335,22 +600,8 @@ server.post('/shyft', async (req, res) => {
         console.error(e);
     }
     // Otherwise, broadcast update to the channel
-    // Events:
-        // GameStateChanged
-        // NewPlayer
-        // SpawnClaimed
-        // UnitSpawned
-        // UnitMoved
-        // UnitAttacked
-        // Meteor Mined
-        // PortalUsed
-        // LootableLooted
-        // GameFished
     res.code(200);
 });
-
-
-
 
 
 /**
