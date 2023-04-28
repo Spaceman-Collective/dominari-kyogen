@@ -1,14 +1,13 @@
 use solana_client_wasm::WasmClient;
 use wasm_bindgen::prelude::*;
 use anchor_lang::prelude::*;
-use std::str::FromStr;
+use std::{str::FromStr};
 use kyogen::account::InstanceIndex as KyogenIndex;
 use structures::{account::StructureIndex, constant::SEEDS_PREFIXINDEX};
 use core_ds::account::Entity;
 use kyogen::component::*; 
 use structures::component::*;
 use crate::{coreds::{get_registry_instance, get_key_from_id}, gamestate::fetch_account, json_wrappers::{AddressListJSON, StructureJSON, TileJSON, TroopJSON, PlayerJSON}, component_index::ComponentIndex};
-use base64::{Engine as _, engine::general_purpose};
 
 #[wasm_bindgen]
 pub struct StatelessSDK {
@@ -109,19 +108,33 @@ impl StatelessSDK {
         get_key_from_id(&self.coreds_id, &registry_instance, id).to_string()
     }
 
+    pub fn get_player_json(&self, data:&str, player_id:u64) -> JsValue {
+        let player = StatelessSDK::get_player_info(&self.registry_id.to_string(), data, player_id);
+        serde_wasm_bindgen::to_value(&player).unwrap()
+    }
 
+    pub  fn get_tile_json(&self, data: &str, tile_id:u64) -> JsValue {
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_tile_info(&self.registry_id.to_string(), data, tile_id)).unwrap()
+    }
+
+    pub fn get_structure_json(&self, data:&str, structure_id:u64) -> JsValue {
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_structure_info(&self.registry_id.to_string(), data, structure_id)).unwrap()
+    }
+
+    pub fn get_troop_json(&self, data:&str, troop_id:u64) -> JsValue {
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_troop_info(&self.registry_id.to_string(), data, troop_id)).unwrap()
+    }
 }
 
-
-// Non WASM Functions
+// Non WASM Methods
 impl StatelessSDK {
     pub fn get_structure_info(registry_str:&str, data: &str, id:u64) -> StructureJSON {
         let componet_index = ComponentIndex::new(registry_str);
-        let metadata = StatelessSDK::get_metadata(&data, &componet_index).unwrap();
-        let location = StatelessSDK::get_location(&data, &componet_index).unwrap();
-        let last_used = StatelessSDK::get_last_used(&data, &componet_index).unwrap();
-        let active = StatelessSDK::get_active(&data, &componet_index).unwrap();
-        let structure = StatelessSDK::get_structure(&data, &componet_index).unwrap();
+        let metadata = StatelessSDK::get_metadata(data, &componet_index).unwrap();
+        let location = StatelessSDK::get_location(data, &componet_index).unwrap();
+        let last_used = StatelessSDK::get_last_used(data, &componet_index).unwrap();
+        let active = StatelessSDK::get_active(data, &componet_index).unwrap();
+        let structure = StatelessSDK::get_structure(data, &componet_index).unwrap();
    
         StructureJSON { 
             name: metadata.name, 
@@ -138,9 +151,9 @@ impl StatelessSDK {
 
     pub fn get_tile_info(registry_str:&str, data: &str, id:u64) -> TileJSON {
         let componet_index = ComponentIndex::new(registry_str);
-        let location = StatelessSDK::get_location(&data, &componet_index).unwrap();
-        let spawn = StatelessSDK::get_spawn(&data, &componet_index).unwrap();
-        let occupant = StatelessSDK::get_occupant(&data, &componet_index).unwrap();
+        let location = StatelessSDK::get_location(data, &componet_index).unwrap();
+        let spawn = StatelessSDK::get_spawn(data, &componet_index).unwrap();
+        let occupant = StatelessSDK::get_occupant(data, &componet_index).unwrap();
 
         let mut tile = TileJSON {
             id: id.to_string(),
@@ -160,14 +173,14 @@ impl StatelessSDK {
 
     pub fn get_troop_info(registry_str:&str, data: &str, id:u64) -> TroopJSON {
         let componet_index = ComponentIndex::new(registry_str);
-        let metadata = StatelessSDK::get_metadata(&data, &componet_index).unwrap();
-        let owner = StatelessSDK::get_owner(&data, &componet_index).unwrap();
-        let last_used = StatelessSDK::get_last_used(&data, &componet_index).unwrap();
-        let range = StatelessSDK::get_range(&data, &componet_index).unwrap();
-        let health = StatelessSDK::get_health(&data, &componet_index).unwrap();
-        let damage = StatelessSDK::get_damage(&data, &componet_index).unwrap();
-        let troop_class = StatelessSDK::get_troop_class(&data, &componet_index).unwrap();
-        let active = StatelessSDK::get_active(&data, &componet_index).unwrap();
+        let metadata = StatelessSDK::get_metadata(data, &componet_index).unwrap();
+        let owner = StatelessSDK::get_owner(data, &componet_index).unwrap();
+        let last_used = StatelessSDK::get_last_used(data, &componet_index).unwrap();
+        let range = StatelessSDK::get_range(data, &componet_index).unwrap();
+        let health = StatelessSDK::get_health(data, &componet_index).unwrap();
+        let damage = StatelessSDK::get_damage(data, &componet_index).unwrap();
+        let troop_class = StatelessSDK::get_troop_class(data, &componet_index).unwrap();
+        let active = StatelessSDK::get_active(data, &componet_index).unwrap();
 
         TroopJSON {
             name: metadata.name,
@@ -192,7 +205,7 @@ impl StatelessSDK {
 
     pub fn get_player_info(registry_str:&str, data: &str, id:u64) -> PlayerJSON {
         let componet_index = ComponentIndex::new(registry_str);
-        let player_stats = StatelessSDK::get_player_stats(&data, &componet_index).unwrap();
+        let player_stats = StatelessSDK::get_player_stats(data, &componet_index).unwrap();
         
         PlayerJSON {
             name: player_stats.name,
@@ -212,98 +225,112 @@ impl StatelessSDK {
 impl StatelessSDK {
     /*** Kyogen Component Getters ***/
     pub fn get_metadata(data: &str, component_index: &ComponentIndex) -> Option<ComponentMetadata> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().metadata.key());
         sc?;
         Some(ComponentMetadata::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_mapmeta(data: &str, component_index: &ComponentIndex) -> Option<ComponentMapMeta> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().mapmeta.key());
         sc?;
         Some(ComponentMapMeta::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_location(data: &str, component_index: &ComponentIndex) -> Option<ComponentLocation> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().location.key());
         sc?;
         Some(ComponentLocation::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_spawn(data: &str, component_index: &ComponentIndex) -> Option<ComponentSpawn> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().spawn.key());
         sc?;
         Some(ComponentSpawn::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_occupant(data: &str, component_index: &ComponentIndex) -> Option<ComponentOccupant> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().occupant.key());
         sc?;
         Some(ComponentOccupant::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_player_stats(data: &str, component_index: &ComponentIndex) -> Option<ComponentPlayerStats> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().player_stats.key());
         sc?;
         Some(ComponentPlayerStats::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_owner(data: &str, component_index: &ComponentIndex) -> Option<ComponentOwner> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().owner.key());
         sc?;
         Some(ComponentOwner::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_last_used(data: &str, component_index: &ComponentIndex) -> Option<ComponentLastUsed> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().last_used.key());
         sc?;
         Some(ComponentLastUsed::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_range(data: &str, component_index: &ComponentIndex) -> Option<ComponentRange> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().range.key());
         sc?;
         Some(ComponentRange::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_health(data: &str, component_index: &ComponentIndex) -> Option<ComponentHealth> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().health.key());
         sc?;
         Some(ComponentHealth::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_damage(data: &str, component_index: &ComponentIndex) -> Option<ComponentDamage> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().damage.key());
         sc?;
         Some(ComponentDamage::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_troop_class(data: &str, component_index: &ComponentIndex) -> Option<ComponentTroopClass> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().troop_class.key());
         sc?;
         Some(ComponentTroopClass::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_active(data: &str, component_index: &ComponentIndex) -> Option<ComponentActive> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().active.key());
         sc?;
         Some(ComponentActive::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
 
     pub fn get_image(data: &str, component_index: &ComponentIndex) -> Option<ComponentImage> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_kyogen_relevant_keys().image.key());
         sc?;
         Some(ComponentImage::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
@@ -312,9 +339,14 @@ impl StatelessSDK {
     /*** Structure Component Getters ***/
 
     pub fn get_structure(data: &str, component_index: &ComponentIndex) -> Option<ComponentStructure> {
-        let serialized_components = Entity::try_from_slice(general_purpose::STANDARD.decode(data).unwrap().as_slice()).unwrap().components;
+        let entity: Entity = deserialize_account(&hex::decode(data).unwrap()).unwrap();
+        let serialized_components = entity.components;
         let sc = serialized_components.get(&component_index.get_structures_relevant_keys().structure.key());
         sc?;
         Some(ComponentStructure::try_from_slice(sc.unwrap().data.as_slice()).unwrap())
     }
+}
+
+pub fn deserialize_account<T: AccountDeserialize>(mut data: &[u8]) -> Result<T> {
+    T::try_deserialize(&mut data).map_err(Into::into)
 }

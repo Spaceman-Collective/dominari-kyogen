@@ -4,7 +4,6 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import fastify from 'fastify';
-import { readFileSync, writeFile, writeFileSync } from 'fs';
 import fetch, { Headers } from 'node-fetch';
 
 const server = fastify({
@@ -293,7 +292,7 @@ server.post('/shyft', async (req, res) => {
         } 
         
         const txn:Transaction = req.body as Transaction;
-
+        console.log(JSON.stringify(txn, null, 2));
         // Check to see if txn has already been processed
         if(txnProcessedBuffer.includes(txn.signatures[0])) {
             // Already processed this txn, redundant callback
@@ -325,11 +324,12 @@ server.post('/shyft', async (req, res) => {
                     console.log(`Event: ${event.name}`);
                     console.log(`Data:\n${JSON.stringify(event.data, null, 2)}`);
                     // All events should have an "instance" that's used as "gameId"
-                    const gameIdHex: string = event.data.instance as string;
-                    if(!gameIdHex || gameIdHex == ""){
+                    const gameIdHex: bigint = event.data.instance as bigint;
+                    if(!gameIdHex || gameIdHex == 0n){
                         console.log("Event didn't have instance!");
                     } else {
-                        let gameId = BigInt(`0x${gameIdHex}`).toString();
+                        let gameId = gameIdHex.toString();
+                        console.log("Game ID: ", gameId);
                         let channel = gameChannels.get(gameId).channel;
                         // Don't deserialize the accounts, just pass them onto clients with structured json
                         // This way the server has to do less work
@@ -344,7 +344,7 @@ server.post('/shyft', async (req, res) => {
                                 data: newState,
                             }))
                         } else if (event.name == "NewPlayer") {
-                            let playerId = BigInt(`0x${event.data.playerId}`).toString();
+                            let playerId = event.data.playerId.toString();
                             let newPlayer: Events.EventNewPlayer = {
                                 instance: gameId,
                                 player: {
@@ -363,8 +363,8 @@ server.post('/shyft', async (req, res) => {
                                 data: newPlayer
                             }))
                         } else if (event.name == "SpawnClaimed") {
-                            let player = BigInt(`0x${event.data.playerId}`).toString();
-                            let tile = BigInt(`0x${event.data.tile}`).toString();
+                            let player = event.data.playerId.toString();
+                            let tile = event.data.tile.toString();
 
                             let spawnClaimed: Events.EventSpawnClaimed = {
                                 instance: gameId,
@@ -383,9 +383,9 @@ server.post('/shyft', async (req, res) => {
                                 data: spawnClaimed
                             }));
                         } else if (event.name == "UnitSpawned") {
-                            let tile = BigInt(`0x${event.data.tile}`).toString();
-                            let player = BigInt(`0x${event.data.tile}`).toString();
-                            let unit = BigInt(`0x${event.data.tile}`).toString();;
+                            let tile = event.data.tile.toString();
+                            let player = event.data.tile.toString();
+                            let unit = event.data.tile.toString();;
 
 
                             let unitSpawned: Events.EventUnitSpawned = {
@@ -420,9 +420,9 @@ server.post('/shyft', async (req, res) => {
                             }));
 
                         } else if (event.name == "UnitMoved") {
-                            let unit = BigInt(`0x${event.data.unit}`).toString();
-                            let from = BigInt(`0x${event.data.from}`).toString();
-                            let to = BigInt(`0x${event.data.to}`).toString();;
+                            let unit = event.data.unit.toString();
+                            let from = event.data.from.toString();
+                            let to = event.data.to.toString();;
 
                             let unitMoved: Events.EventUnitMoved = {
                                 instance: gameId,
@@ -456,9 +456,9 @@ server.post('/shyft', async (req, res) => {
                             }));
 
                         } else if (event.name == "UnitAttacked") {
-                            let attacker = BigInt(`0x${event.data.attacker}`).toString();
-                            let defender = BigInt(`0x${event.data.defender}`).toString();
-                            let tile = BigInt(`0x${event.data.tile}`).toString();;
+                            let attacker = event.data.attacker.toString();
+                            let defender = event.data.defender.toString();
+                            let tile = event.data.tile.toString();;
 
                             let unitAttacked: Events.EventUnitAttacked = {
                                 instance: gameId,
@@ -490,9 +490,9 @@ server.post('/shyft', async (req, res) => {
                                 data: unitAttacked
                             }));
                         } else if (event.name == "MeteorMined") {
-                            let tile = BigInt(`0x${event.data.tile}`).toString();
-                            let meteor = BigInt(`0x${event.data.meteor}`).toString();
-                            let player = BigInt(`0x${event.data.player}`).toString();;
+                            let tile = event.data.tile.toString();
+                            let meteor = event.data.meteor.toString();
+                            let player = event.data.player.toString();
 
                             let meteorMined: Events.EventMeteorMined = {
                                 instance: gameId,
@@ -513,14 +513,14 @@ server.post('/shyft', async (req, res) => {
                                 tile,
                             };
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: meteorMined
-                            }));
+                            });
                         } else if (event.name == "PortalUsed") {
-                            let from = BigInt(`0x${event.data.from}`).toString();
-                            let to = BigInt(`0x${event.data.to}`).toString();
-                            let unit = BigInt(`0x${event.data.unit}`).toString();;
+                            let from = event.data.from.toString();
+                            let to = event.data.to.toString();
+                            let unit = event.data.unit.toString();;
 
                             let portalUsed: Events.EventPortalUsed = {
                                 instance: gameId,
@@ -552,9 +552,9 @@ server.post('/shyft', async (req, res) => {
                                 data: portalUsed
                             }));  
                         } else if (event.name == "LootableLooted") {
-                            let tile = BigInt(`0x${event.data.tile}`).toString();
-                            let lootable = BigInt(`0x${event.data.lootable}`).toString();
-                            let player = BigInt(`0x${event.data.player}`).toString();;
+                            let tile = event.data.tile.toString();
+                            let lootable = event.data.lootable.toString();
+                            let player = event.data.player.toString();;
 
                             let lootableUsed: Events.EventLootableLooted = {
                                 instance: gameId,
@@ -583,9 +583,9 @@ server.post('/shyft', async (req, res) => {
                         } else if (event.name == "GameFinished") {
                             let gameFinished: Events.EventGameFinished = {
                                 instance: gameId,
-                                winning_player_id: BigInt(`0x${event.data.winningPlayerId}`).toString(),
-                                winning_player_key: BigInt(`0x${event.data.winningPlayerKey}`).toString(),
-                                high_score: BigInt(`0x${event.data.highScore}`).toString(),
+                                winning_player_id: event.data.winningPlayerId.toString(),
+                                winning_player_key: event.data.winningPlayerKey.toString(),
+                                high_score: event.data.highScore.toString(),
                             }
                             channel.broadcast(JSON.stringify({
                                 name: event.name,

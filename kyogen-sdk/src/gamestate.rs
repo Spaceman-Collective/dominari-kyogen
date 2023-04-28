@@ -621,7 +621,7 @@ impl GameState {
 
 pub async fn fetch_account<T: AccountDeserialize>(client: &WasmClient, pubkey: &Pubkey) -> Result<T> {
     let data:&[u8] = &client.get_account(pubkey).await.unwrap().data;
-    let result: Result<T> = deserialize_account(data).await;
+    let result: Result<T> = deserialize_account(data);
     result
 }
 
@@ -639,7 +639,7 @@ pub async fn fetch_accounts<T: AccountDeserialize>(client: &WasmClient, pubkeys:
     //let accounts = &client.get_multiple_accounts(pubkeys).await.unwrap();
     let mut results = vec![];
     for (i, account) in accounts.iter().enumerate() {
-        let result: Result<T> = deserialize_account(&account.as_ref().unwrap().data).await;
+        let result: Result<T> = deserialize_account(&account.as_ref().unwrap().data);
         results.push((*pubkeys.get(i).unwrap(), result.unwrap()));
     }
     results
@@ -649,6 +649,6 @@ pub async fn get_accounts(client: &WasmClient, pubkeys: &[Pubkey]) -> Vec<std::o
     client.get_multiple_accounts(pubkeys).await.unwrap()
 }
 
-pub async fn deserialize_account<T: AccountDeserialize>(mut data: &[u8]) -> Result<T> {
+pub fn deserialize_account<T: AccountDeserialize>(mut data: &[u8]) -> Result<T> {
     T::try_deserialize(&mut data).map_err(Into::into)
 }

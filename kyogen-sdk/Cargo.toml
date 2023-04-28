@@ -24,4 +24,4 @@ console_error_panic_hook = "0.1.7"
 web-sys = "0.3.60"
 bimap = {version="0.6.2", features=["serde"]}
 serde = { version="1.0.147", features=["derive"]}
-base64 = "0.21.0"
+hex = "0.4.3"
