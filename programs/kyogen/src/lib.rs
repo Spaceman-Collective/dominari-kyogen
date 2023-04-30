@@ -356,7 +356,7 @@ pub mod kyogen {
     pub fn claim_spawn(ctx:Context<ClaimSpawn>) -> Result<()> {
         let kyogen_ref = &ctx.accounts.config.components;
 
-        // Check the game isnt' paused
+        // Check the game isn't paused
         let mapmeta_sc = ctx.accounts.map.components.get(&kyogen_ref.mapmeta).unwrap();
         let mapmeta = ComponentMapMeta::try_from_slice(&mapmeta_sc.data.as_slice()).unwrap();
         if mapmeta.game_status != PlayPhase::Play {
@@ -435,6 +435,7 @@ pub mod kyogen {
        
         emit!(SpawnClaimed { 
             instance: ctx.accounts.registry_instance.instance, 
+            tile: ctx.accounts.tile_entity.instance,
             clan: player_stats_component.clan, 
             player: ctx.accounts.player_entity.entity_id
         });

@@ -99,3 +99,17 @@ pub struct HighScoreJSON {
     pub player_id: String, //u64
     pub high_score: String, //u64
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AddressListJSON {
+    pub kyogen_index: String,
+    pub structures_index: String,
+    pub map: String,
+    pub tiles: Vec<String>,
+    pub units: Vec<String>,
+    pub players: Vec<String>,
+    pub portals: Vec<String>,
+    pub healers: Vec<String>,
+    pub lootables: Vec<String>,
+    pub meteors: Vec<String>
+}
