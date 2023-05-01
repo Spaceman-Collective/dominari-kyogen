@@ -4,6 +4,7 @@
   "license": "MIT",
   "dependencies": {
     "@coral-xyz/anchor": "^0.27.0",
+    "@fastify/cors": "^8.2.1",
     "@shyft.to/solana-transaction-parser": "git+https://github.com/Shyft-to/solana-tx-parser-public",
     "@types/eventsource": "^1.1.11",
     "@types/node": "^18.15.11",

@@ -5,6 +5,7 @@ dotenv.config();
 
 import fastify from 'fastify';
 import fetch, { Headers } from 'node-fetch';
+import cors from '@fastify/cors';
 
 const server = fastify({
     /* https: {
@@ -73,6 +74,16 @@ const LOG_START_INDEX = "Program data: ".length;
 const KyogenEventCoder = new BorshEventCoder(KyogenIDL as Idl);
 const StructuresEventCoder = new BorshEventCoder(StructuresIDL as Idl);
 
+server.register(cors, {
+    origin: '*',
+    methods: ['GET', 'PUT', 'POST', 'OPTIONS'],
+}).then(() => {
+
+    // middleware registration needs to be done first to apply to the follow endpoints
+    // so maybe this will fix the cors problem be ensuring its registered as a pre-handler middleware
+    // hook before attaching route handlers
+    // should i restart the server?
+    // yeah give that a shot
 
 server.get('/', async (req, res) => {
     res.code(200).send("Kyogen Server is working!");
@@ -214,6 +225,7 @@ function flattenAddressListJSON(addrs:AddressListJSON): string[] {
     ]
 }
 
+// TODO: Remove
 function setReverseAddressLookup(gameId:string, addrs: AddressListJSON) {
     addressToGameIdMap.set(addrs.kyogen_index, {
         gameId,
@@ -626,10 +638,19 @@ server.post('/shyft', async (req, res) => {
 /**
  * Lastly, start the server
  */
-server.listen({port: parseInt(process.env.PORT)}, (err, address) => {
-    if (err){
-        console.error(err);
-        process.exit(1);
-    }
-    console.log(`Server listening at ${address}`);
-});
+
+// server.register(cors, {
+//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
+//     allowedHeaders: ['Content-Type'], // Allow these headers
+//     credentials: true, // Allow cookies to be sent with CORS requests
+// }).then(() => {
+    server.listen({port: parseInt(process.env.PORT)}, (err, address) => {
+
+        if (err){
+            console.error(err);
+            process.exit(1);
+        }
+        console.log(`Server listening at ${address}`);
+    });
+// })
+})
