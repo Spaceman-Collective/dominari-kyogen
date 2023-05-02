@@ -65,7 +65,6 @@ interface AddressType {
 }
 
 let gameChannels: Map<string, Game> = new Map();
-let addressToGameIdMap: Map<string, AddressType> = new Map();
 let txnProcessedBuffer: string[] = [];
 let gameIdsThatNeedCleanup: Set<string> = new Set();
 
@@ -73,17 +72,6 @@ const TXN_BUFFER_LENGTH = 10;
 const LOG_START_INDEX = "Program data: ".length;
 const KyogenEventCoder = new BorshEventCoder(KyogenIDL as Idl);
 const StructuresEventCoder = new BorshEventCoder(StructuresIDL as Idl);
-
-server.register(cors, {
-    origin: '*',
-    methods: ['GET', 'PUT', 'POST', 'OPTIONS'],
-}).then(() => {
-
-    // middleware registration needs to be done first to apply to the follow endpoints
-    // so maybe this will fix the cors problem be ensuring its registered as a pre-handler middleware
-    // hook before attaching route handlers
-    // should i restart the server?
-    // yeah give that a shot
 
 server.get('/', async (req, res) => {
     res.code(200).send("Kyogen Server is working!");
@@ -95,8 +83,6 @@ server.get('/game/:gameId', async (req, res) => {
     if(!gameChannels.has(gameId)){
         const addresses:AddressListJSON = await sdk.fetch_addresses(BigInt(gameId));
         const addressList = flattenAddressListJSON(addresses);
-        // Track all the addresses for reverse lookup
-        setReverseAddressLookup(gameId, addresses);
 
         // Channel doesn't exist
         const hookId = await createHook(gameId, addressList);
@@ -106,10 +92,6 @@ server.get('/game/:gameId', async (req, res) => {
         newChannel.on("session-deregistered", async () => {
             if(newChannel.sessionCount < 1) {
                 console.log(`${gameId} has no more sessions connected!`)
-                // Remvoe from addressToGameId Map as well
-                addressList.forEach((addr: string) => {
-                    addressToGameIdMap.delete(addr);
-                })
                 const wasRemoved = await removeHook(gameId);
                 if(!wasRemoved){
                     gameIdsThatNeedCleanup.add(gameId);
@@ -225,73 +207,6 @@ function flattenAddressListJSON(addrs:AddressListJSON): string[] {
     ]
 }
 
-// TODO: Remove
-function setReverseAddressLookup(gameId:string, addrs: AddressListJSON) {
-    addressToGameIdMap.set(addrs.kyogen_index, {
-        gameId,
-        type: "kyogen_index"
-    });
-
-    addressToGameIdMap.set(addrs.structures_index, {
-        gameId,
-        type: "structures_index"
-    });
-
-    addressToGameIdMap.set(addrs.map, {
-        gameId,
-        type: "map"
-    });
-
-    addrs.tiles.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "tile"
-        })
-    });
-
-    addrs.units.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "unit"
-        })
-    });
-
-    addrs.players.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "player"
-        })
-    });
-
-    addrs.portals.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "portal"
-        })
-    });
-
-    addrs.healers.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "healer"
-        })
-    });
-
-    addrs.lootables.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "lootable"
-        })
-    });
-
-    addrs.meteors.forEach((addr:string) => {
-        addressToGameIdMap.set(addr, {
-            gameId,
-            type: "meteor"
-        })
-    });
-}
-
 /**
  * Shyft will hit this endpoint with payload
  */
@@ -370,6 +285,12 @@ server.post('/shyft', async (req, res) => {
                                 clan: Object.keys(event.data.clan)[0]
 
                             };
+
+                            updateHook(gameId, [
+                                playerId,
+                                ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
+                            ]);
+
                             channel.broadcast(JSON.stringify({
                                 name: event.name,
                                 data: newPlayer
@@ -424,6 +345,11 @@ server.post('/shyft', async (req, res) => {
                                     )).data as string
                                 },
                             };
+
+                            updateHook(gameId, [
+                                unit,
+                                ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
+                            ]);
 
                             channel.broadcast(JSON.stringify({
                                 name: event.name,
@@ -620,18 +546,11 @@ server.post('/shyft', async (req, res) => {
  * Lastly, start the server
  */
 
-// server.register(cors, {
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     allowedHeaders: ['Content-Type'], // Allow these headers
-//     credentials: true, // Allow cookies to be sent with CORS requests
-// }).then(() => {
-    server.listen({port: parseInt(process.env.PORT)}, (err, address) => {
+server.listen({port: parseInt(process.env.PORT)}, (err, address) => {
 
-        if (err){
-            console.error(err);
-            process.exit(1);
-        }
-        console.log(`Server listening at ${address}`);
-    });
-// })
-})
+    if (err){
+        console.error(err);
+        process.exit(1);
+    }
+    console.log(`Server listening at ${address}`);
+});
