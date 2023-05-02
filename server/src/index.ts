@@ -2,26 +2,24 @@ import { StatelessSDK } from '../../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk';
 import * as anchor from '@coral-xyz/anchor';
 import * as dotenv from 'dotenv';
 dotenv.config();
-
-import fastify from 'fastify';
 import fetch, { Headers } from 'node-fetch';
-import cors from '@fastify/cors';
 
-const server = fastify({
-    /* https: {
-        key: readFileSync(process.env.SERVER_KEY),
-        cert: readFileSync(process.env.SERVER_CERT),
-    } */
-});
+import express from 'express';
+import cors from 'cors';
+import https from 'https';
+import http from 'http';
+
+const server = express();
+server.use(cors());
 
 import {createSession, createChannel, Channel} from 'better-sse';
-
 import { Idl } from "@coral-xyz/anchor/dist/cjs/idl";
 import { BorshEventCoder} from "@coral-xyz/anchor";
 import * as KyogenIDL from "../../target/idl/kyogen.json";
 import * as StructuresIDL from "../../target/idl/structures.json";
 import { Transaction } from './TransactionInterface';
 import * as Events from './IEvents';
+import { readFileSync } from 'fs';
 
 
 const programs = {
@@ -74,7 +72,7 @@ const KyogenEventCoder = new BorshEventCoder(KyogenIDL as Idl);
 const StructuresEventCoder = new BorshEventCoder(StructuresIDL as Idl);
 
 server.get('/', async (req, res) => {
-    res.code(200).send("Kyogen Server is working!");
+    res.send("Kyogen Server is working!");
 })
 
 server.get('/game/:gameId', async (req, res) => {
@@ -112,7 +110,7 @@ server.get('/game/:gameId', async (req, res) => {
 
     // Channel now exists
     // create session then register it with channel
-    const newUserSession = await createSession(req.raw, res.raw);
+    const newUserSession = await createSession(req, res);
     // Sessions are automatically deregistered when they are disconnected
     gameChannels.get(gameId).channel.register(newUserSession);
     newUserSession.push("connected");
@@ -214,7 +212,7 @@ server.post('/shyft', async (req, res) => {
     try {
         if(req.headers['x-api-key'] != process.env.SHYFT_KEY) {
             console.log("Callback headers are invalid.");
-            res.code(400);
+            res.statusCode = 400;
             return;
         } 
         
@@ -224,7 +222,7 @@ server.post('/shyft', async (req, res) => {
         if(txnProcessedBuffer.includes(txn.signatures[0])) {
             // Already processed this txn, redundant callback
             console.log("Already processed this transaction.")
-            res.code(200);
+            res.statusCode = 200;
             return;
         } else {
             // Keeps the buffer small so it doesn't fill up all of memory
@@ -538,7 +536,7 @@ server.post('/shyft', async (req, res) => {
         console.error(e);
     }
     // Otherwise, broadcast update to the channel
-    res.code(200);
+    res.statusCode = 200;
 });
 
 
@@ -546,11 +544,16 @@ server.post('/shyft', async (req, res) => {
  * Lastly, start the server
  */
 
-server.listen({port: parseInt(process.env.PORT)}, (err, address) => {
+const httpServer = http.createServer(server);
+const httpsServer = https.createServer({
+    key: readFileSync(process.env.SERVER_KEY),
+    cert: readFileSync(process.env.SERVER_CERT),
+}, server);
 
-    if (err){
-        console.error(err);
-        process.exit(1);
-    }
-    console.log(`Server listening at ${address}`);
+httpServer.listen(process.env.PORT, () => {
+    console.log(`HTTP Server running on port ${process.env.PORT}`);
+});
+
+httpsServer.listen(443, () => {
+    console.log('HTTPS Server running on port 443');
 });
