@@ -357,8 +357,6 @@ server.post('/shyft', async (req, res) => {
                             }))
                         } else if (event.name == "NewPlayer") {
                             let playerId = event.data.playerId.toString();
-                            let playerAddress = sdk.fetch_address_by_id(BigInt(gameId), BigInt(playerId));
-
                             let newPlayer: Events.EventNewPlayer = {
                                 instance: gameId,
                                 player: {
@@ -370,16 +368,8 @@ server.post('/shyft', async (req, res) => {
                                 },
                                 authority: event.data.authority as string,
                                 clan: Object.keys(event.data.clan)[0]
-                            };
 
-                            // Update Hook with new Player Address
-                            await updateHook(
-                                gameId,
-                                [
-                                  playerAddress,
-                                  ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
-                                ]
-                            )
+                            };
                             channel.broadcast(JSON.stringify({
                                 name: event.name,
                                 data: newPlayer
@@ -408,7 +398,7 @@ server.post('/shyft', async (req, res) => {
                             let tile = event.data.tile.toString();
                             let player = event.data.tile.toString();
                             let unit = event.data.tile.toString();;
-                            let unitAddress = sdk.fetch_address_by_id(BigInt(gameId), BigInt(unit));
+
 
                             let unitSpawned: Events.EventUnitSpawned = {
                                 instance: gameId,
@@ -434,15 +424,6 @@ server.post('/shyft', async (req, res) => {
                                     )).data as string
                                 },
                             };
-
-                            // Update Hook with new Player Address
-                            await updateHook(
-                                gameId,
-                                [
-                                    unitAddress,
-                                    ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
-                                ]
-                            )
 
                             channel.broadcast(JSON.stringify({
                                 name: event.name,
