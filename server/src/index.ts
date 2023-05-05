@@ -11,6 +11,7 @@ import http from 'http';
 
 const server = express();
 server.use(cors());
+server.use(express.json());
 
 import {createSession, createChannel, Channel} from 'better-sse';
 import { Idl } from "@coral-xyz/anchor/dist/cjs/idl";
@@ -76,44 +77,47 @@ server.get('/', async (req, res) => {
 })
 
 server.get('/game/:gameId', async (req, res) => {
-    const {gameId} = req.params as any;
-    console.log(`Creating Hook for Game ID: ${gameId}`);
-    if(!gameChannels.has(gameId)){
-        const addresses:AddressListJSON = await sdk.fetch_addresses(BigInt(gameId));
-        const addressList = flattenAddressListJSON(addresses);
+    try{
+        const {gameId} = req.params as any;
+        console.log(`Creating Hook for Game ID: ${gameId}`);
+        if(!gameChannels.has(gameId)){
+            const addresses:AddressListJSON = await sdk.fetch_addresses(BigInt(gameId));
+            const addressList = flattenAddressListJSON(addresses);
 
-        // Channel doesn't exist
-        const hookId = await createHook(gameId, addressList);
-        const newChannel = createChannel();
-        // Every time a session disconnects, check if it's the last session
-        // If no more sessions are connected to this channel, deregister the webhook
-        newChannel.on("session-deregistered", async () => {
-            if(newChannel.sessionCount < 1) {
-                console.log(`${gameId} has no more sessions connected!`)
-                const wasRemoved = await removeHook(gameId);
-                if(!wasRemoved){
-                    gameIdsThatNeedCleanup.add(gameId);
+            // Channel doesn't exist
+            const hookId = await createHook(gameId, addressList);
+            const newChannel = createChannel();
+            // Every time a session disconnects, check if it's the last session
+            // If no more sessions are connected to this channel, deregister the webhook
+            newChannel.on("session-deregistered", async () => {
+                if(newChannel.sessionCount < 1) {
+                    console.log(`${gameId} has no more sessions connected!`)
+                    const wasRemoved = await removeHook(gameId);
+                    if(!wasRemoved){
+                        gameIdsThatNeedCleanup.add(gameId);
+                    }
+                    gameChannels.delete(gameId);
+                    console.log(`Hook deregistered for ${gameId}`);
                 }
-                gameChannels.delete(gameId);
-                console.log(`Hook deregistered for ${gameId}`);
-            }
-        })
+            });
+            gameChannels.set(gameId, {
+                id: gameId,
+                channel: newChannel,
+                addresses,
+                hookId,
+            });
+            console.log(`New channel created for game id: ${gameId}`)
+        }
 
-        gameChannels.set(gameId, {
-            id: gameId,
-            channel: newChannel,
-            addresses,
-            hookId,
-        });
-        console.log(`New channel created for game id: ${gameId}`)
+        // Channel now exists
+        // create session then register it with channel
+        const newUserSession = await createSession(req, res);
+        // Sessions are automatically deregistered when they are disconnected
+        gameChannels.get(gameId).channel.register(newUserSession);
+        newUserSession.push("connected");
+    } catch (e) {
+        console.log(`ERROR: ${e}`);
     }
-
-    // Channel now exists
-    // create session then register it with channel
-    const newUserSession = await createSession(req, res);
-    // Sessions are automatically deregistered when they are disconnected
-    gameChannels.get(gameId).channel.register(newUserSession);
-    newUserSession.push("connected");
 });
 
 async function createHook(gameId:string, addresses: string[]): Promise<string> {
@@ -215,7 +219,6 @@ server.post('/shyft', async (req, res) => {
             res.statusCode = 400;
             return;
         } 
-        
         const txn:Transaction = req.body as Transaction;
         console.log(JSON.stringify(txn, null, 2));
         // Check to see if txn has already been processed
