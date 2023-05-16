@@ -20,20 +20,12 @@ const sdk = new StatelessSDK(
 
 
 async function main(){
-    const instance = "10371318924185010950"
-    const game = new EventSource(`https://a080-208-78-215-79.ngrok-free.app/game/${instance}`);
+    const instance = "3304584963229953057"
+    const game = new EventSource(`https://7248-4-71-241-90.ngrok-free.app/game/${instance}`);
     console.log("Listening to events!");
     game.onmessage = (event) => {
         console.log(event);
         const parsed = JSON.parse(event.data);
-        if(parsed.name == "MeteorMined"){
-            const player = parsed.data.player;
-            const pID = player.id;
-            const data = player.data;
-            console.log("Data Len: ", Buffer.from(data, 'hex').length);
-            console.log(sdk.fetch_address_by_id(BigInt(instance), BigInt(pID)));
-            console.log(JSON.stringify(sdk.get_player_json(data, BigInt(pID)), null, 2));
-        }
     }
 }
 

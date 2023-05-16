@@ -267,12 +267,12 @@ server.post('/shyft', async (req, res) => {
                                 instance: gameId,
                                 newState: Object.keys(event.data.newState)[0]
                             }
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: newState,
-                            }))
+                            })
                         } else if (event.name == "NewPlayer") {
-                            let playerId = event.data.playerId.toString();
+                            let playerId = (event.data.playerId as bigint).toString();
                             let newPlayer: Events.EventNewPlayer = {
                                 instance: gameId,
                                 player: {
@@ -292,13 +292,13 @@ server.post('/shyft', async (req, res) => {
                                 ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
                             ]);
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: newPlayer
-                            }))
+                            })
                         } else if (event.name == "SpawnClaimed") {
-                            let player = event.data.playerId.toString();
-                            let tile = event.data.tile.toString();
+                            let player = (event.data.playerId as bigint).toString();
+                            let tile = (event.data.tile as bigint).toString();
 
                             let spawnClaimed: Events.EventSpawnClaimed = {
                                 instance: gameId,
@@ -312,14 +312,14 @@ server.post('/shyft', async (req, res) => {
                                 },
                                 player
                             }
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: spawnClaimed
-                            }));
+                            });
                         } else if (event.name == "UnitSpawned") {
-                            let tile = event.data.tile.toString();
-                            let player = event.data.tile.toString();
-                            let unit = event.data.tile.toString();;
+                            let tile = (event.data.tile as bigint).toString();
+                            let player = (event.data.tile as bigint).toString();
+                            let unit = (event.data.tile as bigint).toString();;
 
 
                             let unitSpawned: Events.EventUnitSpawned = {
@@ -352,16 +352,15 @@ server.post('/shyft', async (req, res) => {
                                 ...flattenAddressListJSON(await sdk.fetch_addresses(BigInt(gameId)))
                             ]);
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: unitSpawned
 
-                            }));
-
+                            });
                         } else if (event.name == "UnitMoved") {
-                            let unit = event.data.unit.toString();
-                            let from = event.data.from.toString();
-                            let to = event.data.to.toString();;
+                            let unit = (event.data.unit as bigint).toString();
+                            let from = (event.data.from as bigint).toString();
+                            let to = (event.data.to as bigint).toString();
 
                             let unitMoved: Events.EventUnitMoved = {
                                 instance: gameId,
@@ -388,16 +387,15 @@ server.post('/shyft', async (req, res) => {
                                 },
                             };
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: unitMoved
 
-                            }));
-
+                            });
                         } else if (event.name == "UnitAttacked") {
-                            let attacker = event.data.attacker.toString();
-                            let defender = event.data.defender.toString();
-                            let tile = event.data.tile.toString();;
+                            let attacker = (event.data.attacker as bigint).toString();
+                            let defender = (event.data.defender as bigint).toString();
+                            let tile = (event.data.tile as bigint).toString();;
 
                             let unitAttacked: Events.EventUnitAttacked = {
                                 instance: gameId,
@@ -424,14 +422,14 @@ server.post('/shyft', async (req, res) => {
                                 },
                             };
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: unitAttacked
-                            }));
+                            });
                         } else if (event.name == "MeteorMined") {
-                            let tile = event.data.tile.toString();
-                            let meteor = event.data.meteor.toString();
-                            let player = event.data.player.toString();
+                            let tile = (event.data.tile as bigint).toString();
+                            let meteor = (event.data.meteor as bigint).toString();
+                            let player = (event.data.player as bigint).toString();
 
                             let meteorMined: Events.EventMeteorMined = {
                                 instance: gameId,
@@ -457,9 +455,9 @@ server.post('/shyft', async (req, res) => {
                                 data: meteorMined
                             });
                         } else if (event.name == "PortalUsed") {
-                            let from = event.data.from.toString();
-                            let to = event.data.to.toString();
-                            let unit = event.data.unit.toString();;
+                            let from = (event.data.from as bigint).toString();
+                            let to = (event.data.to as bigint).toString();
+                            let unit = (event.data.unit as bigint).toString();;
 
                             let portalUsed: Events.EventPortalUsed = {
                                 instance: gameId,
@@ -486,14 +484,14 @@ server.post('/shyft', async (req, res) => {
                                 },
                             };
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: portalUsed
-                            }));  
+                            });
                         } else if (event.name == "LootableLooted") {
-                            let tile = event.data.tile.toString();
-                            let lootable = event.data.lootable.toString();
-                            let player = event.data.player.toString();;
+                            let tile = (event.data.tile as bigint).toString();
+                            let lootable = (event.data.lootable as bigint).toString();
+                            let player = (event.data.player as bigint).toString();;
 
                             let lootableUsed: Events.EventLootableLooted = {
                                 instance: gameId,
@@ -514,10 +512,10 @@ server.post('/shyft', async (req, res) => {
                                 },
                             };
 
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: lootableUsed
-                            }));  
+                            });
 
                         } else if (event.name == "GameFinished") {
                             let gameFinished: Events.EventGameFinished = {
@@ -526,10 +524,10 @@ server.post('/shyft', async (req, res) => {
                                 winning_player_key: event.data.winningPlayerKey.toString(),
                                 high_score: event.data.highScore.toString(),
                             }
-                            channel.broadcast(JSON.stringify({
+                            channel.broadcast({
                                 name: event.name,
                                 data: gameFinished
-                            }))
+                            })
                         }                        
                     }
                 }
