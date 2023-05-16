@@ -272,7 +272,7 @@ server.post('/shyft', async (req, res) => {
                                 data: newState,
                             })
                         } else if (event.name == "NewPlayer") {
-                            let playerId = (event.data.playerId as bigint).toString();
+                            let playerId = (BigInt(`0x${event.data.playerId}`)).toString();
                             let newPlayer: Events.EventNewPlayer = {
                                 instance: gameId,
                                 player: {
