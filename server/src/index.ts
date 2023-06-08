@@ -1,4 +1,4 @@
-import { StatelessSDK } from "../../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk";
+import { StatelessSDK } from "../kyogen-sdk-nodejs/kyogen_sdk";
 import * as anchor from "@coral-xyz/anchor";
 import * as dotenv from "dotenv";
 dotenv.config();
