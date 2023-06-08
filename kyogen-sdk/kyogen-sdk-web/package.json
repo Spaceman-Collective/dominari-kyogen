@@ -1,0 +1,14 @@
+{
+  "name": "kyogen-sdk",
+  "version": "0.1.0",
+  "files": [
+    "kyogen_sdk_bg.wasm",
+    "kyogen_sdk.js",
+    "kyogen_sdk.d.ts"
+  ],
+  "module": "kyogen_sdk.js",
+  "types": "kyogen_sdk.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

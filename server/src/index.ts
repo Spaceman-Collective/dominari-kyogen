@@ -598,6 +598,12 @@ server.post("/shyft", async (req, res) => {
  */
 
 const httpServer = http.createServer(server);
+
+httpServer.listen(process.env.PORT, () => {
+  console.log(`HTTP Server running on port ${process.env.PORT}`);
+});
+
+/*
 const httpsServer = https.createServer(
   {
     key: readFileSync(process.env.SERVER_KEY),
@@ -606,10 +612,8 @@ const httpsServer = https.createServer(
   server
 );
 
-httpServer.listen(process.env.PORT, () => {
-  console.log(`HTTP Server running on port ${process.env.PORT}`);
-});
 
 httpsServer.listen(443, () => {
   console.log("HTTPS Server running on port 443");
 });
+*/
