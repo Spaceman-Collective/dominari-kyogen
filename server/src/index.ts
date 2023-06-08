@@ -1,4 +1,4 @@
-import { StatelessSDK } from "../kyogen-sdk-nodejs/kyogen_sdk";
+import { StatelessSDK } from "../../kyogen-sdk/kyogen-sdk-nodejs/kyogen_sdk";
 import * as anchor from "@coral-xyz/anchor";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -16,8 +16,8 @@ server.use(express.json());
 import { createSession, createChannel, Channel } from "better-sse";
 import { Idl } from "@coral-xyz/anchor/dist/cjs/idl";
 import { BorshEventCoder } from "@coral-xyz/anchor";
-import * as KyogenIDL from "../idl/kyogen.json";
-import * as StructuresIDL from "../idl/structures.json";
+import * as KyogenIDL from "../../target/idl/kyogen.json";
+import * as StructuresIDL from "../../target/idl/structures.json";
 import { Transaction } from "./TransactionInterface";
 import * as Events from "./IEvents";
 import { readFileSync } from "fs";
@@ -603,7 +603,6 @@ httpServer.listen(process.env.PORT, () => {
   console.log(`HTTP Server running on port ${process.env.PORT}`);
 });
 
-/*
 const httpsServer = https.createServer(
   {
     key: readFileSync(process.env.SERVER_KEY),
@@ -612,8 +611,6 @@ const httpsServer = https.createServer(
   server
 );
 
-
 httpsServer.listen(443, () => {
   console.log("HTTPS Server running on port 443");
 });
-*/

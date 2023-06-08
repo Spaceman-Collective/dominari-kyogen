@@ -230,7 +230,7 @@ function makeMutClosure(arg0, arg1, dtor, f) {
     return real;
 }
 function __wbg_adapter_46(arg0, arg1, arg2) {
-    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h8499c065b5fe4e0e(arg0, arg1, addHeapObject(arg2));
+    wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h33136d33cc3ec279(arg0, arg1, addHeapObject(arg2));
 }
 
 function _assertClass(instance, klass) {
@@ -284,7 +284,7 @@ function handleError(f, args) {
     }
 }
 function __wbg_adapter_298(arg0, arg1, arg2, arg3) {
-    wasm.wasm_bindgen__convert__closures__invoke2_mut__h17eec2a9b68a6f6f(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
+    wasm.wasm_bindgen__convert__closures__invoke2_mut__h2ecf3afdb072861a(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
 /**
@@ -2539,11 +2539,6 @@ export function __wbindgen_is_string(arg0) {
     return ret;
 };
 
-export function __wbindgen_string_new(arg0, arg1) {
-    const ret = getStringFromWasm0(arg0, arg1);
-    return addHeapObject(ret);
-};
-
 export function __wbindgen_is_object(arg0) {
     const val = getObject(arg0);
     const ret = typeof(val) === 'object' && val !== null;
@@ -2575,6 +2570,11 @@ export function __wbindgen_boolean_get(arg0) {
 
 export function __wbindgen_object_clone_ref(arg0) {
     const ret = getObject(arg0);
+    return addHeapObject(ret);
+};
+
+export function __wbindgen_string_new(arg0, arg1) {
+    const ret = getStringFromWasm0(arg0, arg1);
     return addHeapObject(ret);
 };
 
@@ -2997,8 +2997,8 @@ export function __wbindgen_memory() {
     return addHeapObject(ret);
 };
 
-export function __wbindgen_closure_wrapper763(arg0, arg1, arg2) {
-    const ret = makeMutClosure(arg0, arg1, 192, __wbg_adapter_46);
+export function __wbindgen_closure_wrapper761(arg0, arg1, arg2) {
+    const ret = makeMutClosure(arg0, arg1, 190, __wbg_adapter_46);
     return addHeapObject(ret);
 };
 
