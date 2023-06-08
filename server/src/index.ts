@@ -359,6 +359,13 @@ server.post("/shyft", async (req, res) => {
               let tile = (event.data.tile as bigint).toString();
               let player = (event.data.player as bigint).toString();
               let unit = (event.data.unit as bigint).toString();
+              const unitAddress = sdk.fetch_address_by_id(
+                BigInt(gameId),
+                BigInt(unit)
+              );
+              const newUnitData = (
+                await connection.getAccountInfo(new PublicKey(unitAddress))
+              ).data.toString("hex");
 
               let unitSpawned: Events.EventUnitSpawned = {
                 instance: gameId,
@@ -380,16 +387,12 @@ server.post("/shyft", async (req, res) => {
                 },
                 unit: {
                   id: unit,
-                  data: txn.accounts.find(
-                    (acc) =>
-                      acc.address ==
-                      sdk.fetch_address_by_id(BigInt(gameId), BigInt(unit))
-                  ).data as string,
+                  data: newUnitData,
                 },
               };
 
               updateHook(gameId, [
-                unit,
+                unitAddress,
                 ...flattenAddressListJSON(
                   await sdk.fetch_addresses(BigInt(gameId))
                 ),
