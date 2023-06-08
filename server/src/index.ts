@@ -357,8 +357,8 @@ server.post("/shyft", async (req, res) => {
               });
             } else if (event.name == "UnitSpawned") {
               let tile = (event.data.tile as bigint).toString();
-              let player = (event.data.tile as bigint).toString();
-              let unit = (event.data.tile as bigint).toString();
+              let player = (event.data.player as bigint).toString();
+              let unit = (event.data.unit as bigint).toString();
 
               let unitSpawned: Events.EventUnitSpawned = {
                 instance: gameId,
