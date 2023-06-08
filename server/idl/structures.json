@@ -1,0 +1,985 @@
+{
+  "version": "0.1.0",
+  "name": "structures",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "componentKeys",
+          "type": {
+            "defined": "StructuresComponentKeys"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initIndex",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "abRegistration",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndexAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "gameToken",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "instance",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initStructure",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structureIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structureBlueprint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structureRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structure",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tile",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "entityId",
+          "type": "u64"
+        },
+        {
+          "name": "location",
+          "type": {
+            "defined": "(u8,u8)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "useMeteor",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "structuresAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "structuresConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "map",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "meteor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "tile",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "unit",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "usePortal",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "map",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "from",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fromPortal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "to",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "toPortal",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "unit",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "useLootable",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "userAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "gameToken",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pack",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "map",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tile",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "unit",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "lootable",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claimVictory",
+      "accounts": [
+        {
+          "name": "structuresIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "map",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "player",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "closeStructure",
+      "accounts": [
+        {
+          "name": "receiver",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresIndex",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "components",
+            "type": {
+              "defined": "StructuresComponentKeys"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StructureIndex",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "instance",
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "portal",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "healer",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "lootable",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "meteor",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "highScore",
+            "type": {
+              "defined": "(u64,u64)"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "ComponentStructure",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cost",
+            "type": "u64"
+          },
+          {
+            "name": "structure",
+            "type": {
+              "defined": "StructureType"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "StructuresComponentKeys",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "structure",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StructureType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Portal",
+            "fields": [
+              {
+                "name": "channel",
+                "type": "u8"
+              }
+            ]
+          },
+          {
+            "name": "Healer",
+            "fields": [
+              {
+                "name": "heal_amt",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Lootable",
+            "fields": [
+              {
+                "name": "ancients_pack",
+                "type": "publicKey"
+              },
+              {
+                "name": "wildings_pack",
+                "type": "publicKey"
+              },
+              {
+                "name": "creepers_pack",
+                "type": "publicKey"
+              },
+              {
+                "name": "synths_pack",
+                "type": "publicKey"
+              }
+            ]
+          },
+          {
+            "name": "Meteor",
+            "fields": [
+              {
+                "name": "solarite_per_use",
+                "type": "u64"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "MeteorMined",
+      "fields": [
+        {
+          "name": "instance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tile",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "meteor",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "player",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "PortalUsed",
+      "fields": [
+        {
+          "name": "instance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "from",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "to",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "unit",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "LootableLooted",
+      "fields": [
+        {
+          "name": "instance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "tile",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "lootable",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "player",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "GameFinished",
+      "fields": [
+        {
+          "name": "instance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "winningPlayerId",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "winningPlayerKey",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "highScore",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "LocationMismatch",
+      "msg": ""
+    },
+    {
+      "code": 6001,
+      "name": "StructureCannotBeInitializedOnSpawn",
+      "msg": ""
+    },
+    {
+      "code": 6002,
+      "name": "InvalidUnit",
+      "msg": ""
+    },
+    {
+      "code": 6003,
+      "name": "InvalidLocation",
+      "msg": ""
+    },
+    {
+      "code": 6004,
+      "name": "InvalidOwner",
+      "msg": ""
+    },
+    {
+      "code": 6005,
+      "name": "StructureInCooldown",
+      "msg": ""
+    },
+    {
+      "code": 6006,
+      "name": "WrongStructure",
+      "msg": ""
+    },
+    {
+      "code": 6007,
+      "name": "TileOccupied",
+      "msg": ""
+    },
+    {
+      "code": 6008,
+      "name": "UnitCooldown",
+      "msg": ""
+    },
+    {
+      "code": 6009,
+      "name": "PortalChannelMismatch",
+      "msg": ""
+    },
+    {
+      "code": 6010,
+      "name": "GamePaused",
+      "msg": ""
+    },
+    {
+      "code": 6011,
+      "name": "InvalidPack",
+      "msg": ""
+    },
+    {
+      "code": 6012,
+      "name": "HighScoreNotReached",
+      "msg": ""
+    },
+    {
+      "code": 6013,
+      "name": "WrongPlayer",
+      "msg": ""
+    },
+    {
+      "code": 6014,
+      "name": "NotAStructure",
+      "msg": ""
+    }
+  ]
+}

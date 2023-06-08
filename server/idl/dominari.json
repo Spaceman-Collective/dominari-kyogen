@@ -1,0 +1,943 @@
+{
+  "version": "0.1.0",
+  "name": "dominari",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "componentKeys",
+          "type": {
+            "defined": "KyogenComponentKeys"
+          }
+        }
+      ]
+    },
+    {
+      "name": "registerPack",
+      "docs": [
+        "* Registers a new pack with the given name and pubkeys of blueprints\n     * @param name"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pack",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "blueprints",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "registerBlueprint",
+      "docs": [
+        "Adds a new blueprint\n     * @param name\n     * @param blueprint BTreeMap of Pubkey to Serialized Component that gets auto loaded onto the new entity"
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "blueprint",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "blueprint",
+          "type": {
+            "defined": "BTreeMap<Pubkey,SerializedComponent>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "createGameInstance",
+      "docs": [
+        "* Creates a registry instance with Core Ds Program."
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instanceIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenRegistration",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "structuresRegistration",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "cardsRegistration",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "instance",
+          "type": "u64"
+        },
+        {
+          "name": "gameConfig",
+          "type": {
+            "defined": "GameConfig"
+          }
+        }
+      ]
+    },
+    {
+      "name": "changeGameState",
+      "docs": [
+        "* Only admin is allowed to change the game states for Kyogen Clash games."
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instanceIndex",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "newGameState",
+          "type": {
+            "defined": "PlayPhase"
+          }
+        }
+      ]
+    },
+    {
+      "name": "initMap",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instanceIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mapEntity",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "entityId",
+          "type": "u64"
+        },
+        {
+          "name": "maxX",
+          "type": "u8"
+        },
+        {
+          "name": "maxY",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initTile",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instanceIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tileEntity",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "entityId",
+          "type": "u64"
+        },
+        {
+          "name": "x",
+          "type": "u8"
+        },
+        {
+          "name": "y",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "initPlayer",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "instanceIndex",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registryConfig",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "kyogenRegistration",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "coreds",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "playerEntity",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "entityId",
+          "type": "u64"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "clan",
+          "type": {
+            "defined": "Clans"
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "components",
+            "type": {
+              "defined": "KyogenComponentKeys"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Blueprint",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "components",
+            "type": {
+              "defined": "BTreeMap<Pubkey,SerializedComponent>"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Pack",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "blueprints",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstanceIndex",
+      "docs": [
+        "* Always needs a map for an instance\n * Init during Init Map\n * Then realloc+ on entity spawn"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "publicKey"
+          },
+          {
+            "name": "config",
+            "type": {
+              "defined": "GameConfig"
+            }
+          },
+          {
+            "name": "map",
+            "type": "u64"
+          },
+          {
+            "name": "tiles",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "units",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "players",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "playPhase",
+            "type": {
+              "defined": "PlayPhase"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "GameConfig",
+      "docs": [
+        "* Starting Cards is a pointer to a PACK NAME in the \"starting_cards\" Pack"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxPlayers",
+            "type": "u16"
+          },
+          {
+            "name": "startingCards",
+            "type": {
+              "vec": "publicKey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentMetadata",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "entityType",
+            "type": {
+              "defined": "EntityType"
+            }
+          },
+          {
+            "name": "registryInstance",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentMapMeta",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxX",
+            "type": "u8"
+          },
+          {
+            "name": "maxY",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentLocation",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "x",
+            "type": "u8"
+          },
+          {
+            "name": "y",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentOwner",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": {
+              "option": "publicKey"
+            }
+          },
+          {
+            "name": "player",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentOccupant",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "occupantId",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentPlayerStats",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "key",
+            "type": "publicKey"
+          },
+          {
+            "name": "score",
+            "type": "u64"
+          },
+          {
+            "name": "kills",
+            "type": "u64"
+          },
+          {
+            "name": "cards",
+            "type": {
+              "vec": "publicKey"
+            }
+          },
+          {
+            "name": "clan",
+            "type": {
+              "defined": "Clans"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentLastUsed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "lastUsed",
+            "type": "u64"
+          },
+          {
+            "name": "recovery",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentRange",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "movement",
+            "type": "u8"
+          },
+          {
+            "name": "attackRange",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentHealth",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "health",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentDamage",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "minDamage",
+            "type": "u64"
+          },
+          {
+            "name": "maxDamage",
+            "type": "u64"
+          },
+          {
+            "name": "bonusSamurai",
+            "type": "u32"
+          },
+          {
+            "name": "bonusSohei",
+            "type": "u32"
+          },
+          {
+            "name": "bonusShinobi",
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentTroopClass",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "class",
+            "type": {
+              "defined": "TroopClass"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentActive",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "active",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComponentImage",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "link",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "KyogenComponentKeys",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "metadata",
+            "type": "publicKey"
+          },
+          {
+            "name": "mapmeta",
+            "type": "publicKey"
+          },
+          {
+            "name": "location",
+            "type": "publicKey"
+          },
+          {
+            "name": "occupant",
+            "type": "publicKey"
+          },
+          {
+            "name": "playerStats",
+            "type": "publicKey"
+          },
+          {
+            "name": "owner",
+            "type": "publicKey"
+          },
+          {
+            "name": "lastUsed",
+            "type": "publicKey"
+          },
+          {
+            "name": "range",
+            "type": "publicKey"
+          },
+          {
+            "name": "health",
+            "type": "publicKey"
+          },
+          {
+            "name": "damage",
+            "type": "publicKey"
+          },
+          {
+            "name": "troopClass",
+            "type": "publicKey"
+          },
+          {
+            "name": "active",
+            "type": "publicKey"
+          },
+          {
+            "name": "image",
+            "type": "publicKey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlayPhase",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Lobby"
+          },
+          {
+            "name": "Play"
+          },
+          {
+            "name": "Paused"
+          },
+          {
+            "name": "Finished"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EntityType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Map"
+          },
+          {
+            "name": "Unit"
+          },
+          {
+            "name": "Feature"
+          },
+          {
+            "name": "Tile"
+          },
+          {
+            "name": "Player"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TroopClass",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Samurai"
+          },
+          {
+            "name": "Sohei"
+          },
+          {
+            "name": "Shinobi"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Clans",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Ancients"
+          },
+          {
+            "name": "Wildings"
+          },
+          {
+            "name": "Creepers"
+          },
+          {
+            "name": "Synths"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "PlayerCountExceeded",
+      "msg": "Player count exceeded"
+    },
+    {
+      "code": 6001,
+      "name": "StringTooLong",
+      "msg": "String too long"
+    }
+  ]
+}

@@ -1,0 +1,427 @@
+{
+  "version": "0.1.0",
+  "name": "core_ds",
+  "instructions": [
+    {
+      "name": "initRegistry",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "registry",
+          "type": "publicKey"
+        },
+        {
+          "name": "instance",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initEntity",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "entityId",
+          "type": "u64"
+        },
+        {
+          "name": "components",
+          "type": {
+            "defined": "BTreeMap<Pubkey,SerializedComponent>"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mintArcnft",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "registryInstance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "arcnft",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "addComponents",
+      "accounts": [
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "components",
+          "type": {
+            "vec": {
+              "defined": "(Pubkey,SerializedComponent)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "removeComponent",
+      "accounts": [
+        {
+          "name": "benefactor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "removedComponents",
+          "type": {
+            "vec": "publicKey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "modifyComponents",
+      "accounts": [
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "components",
+          "type": {
+            "vec": {
+              "defined": "(Pubkey,Vec<u8>)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "removeEntity",
+      "accounts": [
+        {
+          "name": "benefactor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "entity",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "registrySigner",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "RegistryInstance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "registry",
+            "type": "publicKey"
+          },
+          {
+            "name": "instance",
+            "type": "u64"
+          },
+          {
+            "name": "entities",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Entity",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "entityId",
+            "type": "u64"
+          },
+          {
+            "name": "instance",
+            "type": "u64"
+          },
+          {
+            "name": "registry",
+            "type": "publicKey"
+          },
+          {
+            "name": "components",
+            "type": {
+              "defined": "BTreeMap<Pubkey,SerializedComponent>"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ARCNFT",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "entity",
+            "type": "publicKey"
+          },
+          {
+            "name": "mint",
+            "type": "publicKey"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "SerializedComponent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "maxSize",
+            "type": "u64"
+          },
+          {
+            "name": "data",
+            "type": "bytes"
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "NewWorldInitalized",
+      "fields": [
+        {
+          "name": "world",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "instance",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "instanceAddress",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "NewEntityMinted",
+      "fields": [
+        {
+          "name": "worldInstance",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "entityId",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "entity",
+          "type": "publicKey",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "NewComponentAdded",
+      "fields": [
+        {
+          "name": "entity",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "components",
+          "type": {
+            "vec": {
+              "defined": "(Pubkey,SerializedComponent)"
+            }
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ComponentRemoved",
+      "fields": [
+        {
+          "name": "entity",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "component",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "ComponentModified",
+      "fields": [
+        {
+          "name": "entity",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "components",
+          "type": {
+            "vec": "publicKey"
+          },
+          "index": false
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InvalidDataLengthError",
+      "msg": "Invalid Data Length!"
+    }
+  ]
+}
