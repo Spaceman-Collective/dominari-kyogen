@@ -17,5 +17,5 @@ pub fn get_registry_instance(coreds_id:&Pubkey, registry:&Pubkey, instance:u64) 
         SEEDS_REGISTRYINSTANCE_PREFIX,
         registry.to_bytes().as_ref(),
         instance.to_be_bytes().as_ref()
-    ], &coreds_id).0
+    ], coreds_id).0
 }

@@ -20,8 +20,8 @@ const sdk = new StatelessSDK(
 
 
 async function main(){
-    const instance = "3304584963229953057"
-    const game = new EventSource(`https://7248-4-71-241-90.ngrok-free.app/game/${instance}`);
+    const instance = "6387869488554589888"
+    const game = new EventSource(`${process.env.SERVER_ADDRESS}/game/${instance}`);
     console.log("Listening to events!");
     game.onmessage = (event) => {
         console.log(event);

@@ -1,5 +1,5 @@
 max_players: 100
-game_token: "replace w/ mint"
+game_token: replace w/ mint
 spawn_claim_multiplier: 1.1
 tokens_minted: 50000
 max_score: 500
