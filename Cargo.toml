@@ -1,8 +1,5 @@
 [workspace]
-members = [
-    "programs/*",
-    "kyogen-sdk",
-]
+members = ["programs/*", "kyogen-sdk"]
 
 [profile.release]
 overflow-checks = true

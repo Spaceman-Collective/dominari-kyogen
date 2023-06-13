@@ -275,7 +275,7 @@ function handleError(f, args) {
         wasm.__wbindgen_exn_store(addHeapObject(e));
     }
 }
-function __wbg_adapter_298(arg0, arg1, arg2, arg3) {
+function __wbg_adapter_302(arg0, arg1, arg2, arg3) {
     wasm.wasm_bindgen__convert__closures__invoke2_mut__h2ecf3afdb072861a(arg0, arg1, addHeapObject(arg2), addHeapObject(arg3));
 }
 
@@ -1851,6 +1851,20 @@ export class StatelessSDK {
     }
     /**
     * @param {string} data
+    * @param {bigint} player_id
+    * @param {string} registry_str
+    * @returns {any}
+    */
+    get_player_json_2(data, player_id, registry_str) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(registry_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.statelesssdk_get_player_json_2(this.ptr, ptr0, len0, player_id, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} data
     * @param {bigint} tile_id
     * @returns {any}
     */
@@ -1858,6 +1872,21 @@ export class StatelessSDK {
         const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.statelesssdk_get_tile_json(this.ptr, ptr0, len0, tile_id);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} data
+    * @param {bigint} tile_id
+    * @param {string} registry_str
+    * @param {any} troop_data_hex
+    * @returns {any}
+    */
+    get_tile_json_2(data, tile_id, registry_str, troop_data_hex) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(registry_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.statelesssdk_get_tile_json_2(this.ptr, ptr0, len0, tile_id, ptr1, len1, addHeapObject(troop_data_hex));
         return takeObject(ret);
     }
     /**
@@ -1873,6 +1902,20 @@ export class StatelessSDK {
     }
     /**
     * @param {string} data
+    * @param {bigint} structure_id
+    * @param {string} registry_str
+    * @returns {any}
+    */
+    get_structure_json_2(data, structure_id, registry_str) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(registry_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.statelesssdk_get_structure_json_2(this.ptr, ptr0, len0, structure_id, ptr1, len1);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} data
     * @param {bigint} troop_id
     * @returns {any}
     */
@@ -1880,6 +1923,20 @@ export class StatelessSDK {
         const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
         const ret = wasm.statelesssdk_get_troop_json(this.ptr, ptr0, len0, troop_id);
+        return takeObject(ret);
+    }
+    /**
+    * @param {string} data
+    * @param {bigint} troop_id
+    * @param {string} registry_str
+    * @returns {any}
+    */
+    get_troop_json_2(data, troop_id, registry_str) {
+        const ptr0 = passStringToWasm0(data, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(registry_str, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.statelesssdk_get_troop_json_2(this.ptr, ptr0, len0, troop_id, ptr1, len1);
         return takeObject(ret);
     }
 }
@@ -2821,7 +2878,7 @@ function getImports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_298(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_302(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -2931,7 +2988,7 @@ function getImports() {
         const ret = wasm.memory;
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper761 = function(arg0, arg1, arg2) {
+    imports.wbg.__wbindgen_closure_wrapper769 = function(arg0, arg1, arg2) {
         const ret = makeMutClosure(arg0, arg1, 190, __wbg_adapter_46);
         return addHeapObject(ret);
     };

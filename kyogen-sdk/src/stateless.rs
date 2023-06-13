@@ -113,16 +113,40 @@ impl StatelessSDK {
         serde_wasm_bindgen::to_value(&player).unwrap()
     }
 
+    pub fn get_player_json_2(&self, data:&str, player_id:u64, registry_str: &str) -> JsValue {
+        let player = StatelessSDK::get_player_info(registry_str, data, player_id);
+        serde_wasm_bindgen::to_value(&player).unwrap()
+    }
+
     pub  fn get_tile_json(&self, data: &str, tile_id:u64) -> JsValue {
-        serde_wasm_bindgen::to_value(&StatelessSDK::get_tile_info(&self.registry_id.to_string(), data, tile_id)).unwrap()
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_tile_info(&self.registry_id.to_string(), data, tile_id, None)).unwrap()
+    }
+
+    pub  fn get_tile_json_2(&self, data: &str, tile_id:u64, registry_str:&str, troop_data_hex:JsValue) -> JsValue {
+        let troop_data_str: String = serde_wasm_bindgen::from_value(troop_data_hex).unwrap();
+        let troop_data:Option<&str>;
+        if troop_data_str.is_empty() {
+            troop_data = None
+        } else {
+            troop_data = Some(troop_data_str.as_str());
+        }
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_tile_info(registry_str, data, tile_id, troop_data)).unwrap()
     }
 
     pub fn get_structure_json(&self, data:&str, structure_id:u64) -> JsValue {
         serde_wasm_bindgen::to_value(&StatelessSDK::get_structure_info(&self.registry_id.to_string(), data, structure_id)).unwrap()
     }
 
+    pub fn get_structure_json_2(&self, data:&str, structure_id:u64, registry_str: &str) -> JsValue {
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_structure_info(registry_str, data, structure_id)).unwrap()
+    }
+
     pub fn get_troop_json(&self, data:&str, troop_id:u64) -> JsValue {
         serde_wasm_bindgen::to_value(&StatelessSDK::get_troop_info(&self.registry_id.to_string(), data, troop_id)).unwrap()
+    }
+
+    pub fn get_troop_json_2(&self, data:&str, troop_id:u64, registry_str: &str) -> JsValue {
+        serde_wasm_bindgen::to_value(&StatelessSDK::get_troop_info(registry_str, data, troop_id)).unwrap()
     }
 }
 
@@ -149,7 +173,7 @@ impl StatelessSDK {
         }
     }
 
-    pub fn get_tile_info(registry_str:&str, data: &str, id:u64) -> TileJSON {
+    pub fn get_tile_info(registry_str:&str, data: &str, id:u64, troop_data: Option<&str> ) -> TileJSON {
         let componet_index = ComponentIndex::new(registry_str);
         let location = StatelessSDK::get_location(data, &componet_index).unwrap();
         let spawn = StatelessSDK::get_spawn(data, &componet_index).unwrap();
@@ -165,7 +189,7 @@ impl StatelessSDK {
         };
 
         if occupant.occupant_id.is_some() {
-            tile.troop = Some(StatelessSDK::get_troop_info(registry_str, data, occupant.occupant_id.unwrap()));
+            tile.troop = Some(StatelessSDK::get_troop_info(registry_str, troop_data.unwrap(), occupant.occupant_id.unwrap()));
         }
 
         tile

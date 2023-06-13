@@ -632,10 +632,25 @@ export class StatelessSDK {
   get_player_json(data: string, player_id: bigint): any;
 /**
 * @param {string} data
+* @param {bigint} player_id
+* @param {string} registry_str
+* @returns {any}
+*/
+  get_player_json_2(data: string, player_id: bigint, registry_str: string): any;
+/**
+* @param {string} data
 * @param {bigint} tile_id
 * @returns {any}
 */
   get_tile_json(data: string, tile_id: bigint): any;
+/**
+* @param {string} data
+* @param {bigint} tile_id
+* @param {string} registry_str
+* @param {any} troop_data_hex
+* @returns {any}
+*/
+  get_tile_json_2(data: string, tile_id: bigint, registry_str: string, troop_data_hex: any): any;
 /**
 * @param {string} data
 * @param {bigint} structure_id
@@ -644,10 +659,24 @@ export class StatelessSDK {
   get_structure_json(data: string, structure_id: bigint): any;
 /**
 * @param {string} data
+* @param {bigint} structure_id
+* @param {string} registry_str
+* @returns {any}
+*/
+  get_structure_json_2(data: string, structure_id: bigint, registry_str: string): any;
+/**
+* @param {string} data
 * @param {bigint} troop_id
 * @returns {any}
 */
   get_troop_json(data: string, troop_id: bigint): any;
+/**
+* @param {string} data
+* @param {bigint} troop_id
+* @param {string} registry_str
+* @returns {any}
+*/
+  get_troop_json_2(data: string, troop_id: bigint, registry_str: string): any;
 /**
 */
   coreds_id: Pubkey;

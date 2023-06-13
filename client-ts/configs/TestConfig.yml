@@ -34,12 +34,12 @@ structures:
   - 
     x: 1
     y: 1
-    structure_blueprint: "Meteor"
+    structure_blueprint: Meteor
   - 
     x: 4
     y: 4
-    structure_blueprint: "Meteor"
+    structure_blueprint: Meteor
   - 
     x: 6
     y: 6
-    structure_blueprint: "Meteor"
+    structure_blueprint: Meteor

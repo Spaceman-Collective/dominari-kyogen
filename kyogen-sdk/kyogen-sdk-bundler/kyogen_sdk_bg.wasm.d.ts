@@ -94,9 +94,13 @@ export function statelesssdk_new(a: number, b: number, c: number, d: number, e: 
 export function statelesssdk_fetch_addresses(a: number, b: number): number;
 export function statelesssdk_fetch_address_by_id(a: number, b: number, c: number, d: number): void;
 export function statelesssdk_get_player_json(a: number, b: number, c: number, d: number): number;
+export function statelesssdk_get_player_json_2(a: number, b: number, c: number, d: number, e: number, f: number): number;
 export function statelesssdk_get_tile_json(a: number, b: number, c: number, d: number): number;
+export function statelesssdk_get_tile_json_2(a: number, b: number, c: number, d: number, e: number, f: number, g: number): number;
 export function statelesssdk_get_structure_json(a: number, b: number, c: number, d: number): number;
+export function statelesssdk_get_structure_json_2(a: number, b: number, c: number, d: number, e: number, f: number): number;
 export function statelesssdk_get_troop_json(a: number, b: number, c: number, d: number): number;
+export function statelesssdk_get_troop_json_2(a: number, b: number, c: number, d: number, e: number, f: number): number;
 export function __wbg_set_structures_core_id(a: number, b: number): void;
 export function __wbg_set_structures_registry_id(a: number, b: number): void;
 export function __wbg_set_structures_kyogen_id(a: number, b: number): void;
